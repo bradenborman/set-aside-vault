@@ -1,0 +1,18 @@
+# Base application configuration
+# Note: Active profile is set via SPRING_PROFILES_ACTIVE environment variable
+# In Railway, set SPRING_PROFILES_ACTIVE=cloud to use application-cloud.yml
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: set-aside-vault
+  
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+# Default timezone
+spring.jackson.time-zone: America/Chicago

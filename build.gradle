@@ -1,0 +1,22 @@
+plugins {
+    id 'java'
+}
+
+allprojects {
+    group = 'com.vault'
+    version = '1.0.0'
+}
+
+subprojects {
+    apply plugin: 'java'
+    
+    repositories {
+        mavenCentral()
+    }
+    
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+}

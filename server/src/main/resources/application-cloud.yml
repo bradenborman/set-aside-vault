@@ -1,0 +1,14 @@
+# Cloud/Railway deployment profile configuration
+# Maps Railway environment variables to Spring Boot properties
+# Set SPRING_PROFILES_ACTIVE=cloud in Railway environment
+
+server:
+  port: ${PORT:8080}
+
+storage:
+  # Railway mounted volume path - set STORAGE_PATH in Railway
+  location: ${STORAGE_PATH:/app/uploads}
+
+logging:
+  level:
+    com.vault: INFO

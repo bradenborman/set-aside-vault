@@ -87,9 +87,14 @@
   gap: 2rem;
   animation: scroll 60s linear infinite;
   width: fit-content;
+  -webkit-overflow-scrolling: touch;
 }
 
 .carousel-track:hover {
+  animation-play-state: paused;
+}
+
+.carousel-track.paused {
   animation-play-state: paused;
 }
 
@@ -107,6 +112,8 @@
   width: 400px;
   cursor: pointer;
   transition: var(--transition);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .carousel-item:hover {
@@ -132,6 +139,31 @@
   height: 100%;
   object-fit: cover;
   transition: var(--transition);
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  background: linear-gradient(
+    90deg,
+    var(--gray-200) 0%,
+    var(--gray-300) 50%,
+    var(--gray-200) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.carousel-image[src] {
+  animation: none;
+  background: none;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .carousel-item:hover .carousel-image {
@@ -201,11 +233,48 @@
   font-weight: 500;
 }
 
+/* Tablet portrait (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .stats-dashboard {
+    gap: 1.75rem;
+    padding: 1.5rem 2rem;
+  }
+
+  .stat-number {
+    font-size: 1.625rem;
+  }
+
+  .stat-label {
+    font-size: 0.8125rem;
+  }
+
+  .carousel-item {
+    width: 340px;
+  }
+
+  .carousel-image-wrapper {
+    height: 440px;
+  }
+
+  .carousel-title {
+    font-size: 1.625rem;
+  }
+
+  .carousel-count {
+    font-size: 1rem;
+  }
+}
+
 @media (max-width: 768px) {
   .stats-dashboard {
     gap: 1.5rem;
     padding: 1.25rem 1.5rem;
     margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    min-width: 80px;
   }
 
   .stat-number {
@@ -220,12 +289,27 @@
     font-size: 1.25rem;
   }
 
+  .carousel-container {
+    padding: 1.5rem 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+  }
+
+  .carousel-track {
+    gap: 1.5rem;
+    animation: scroll 45s linear infinite;
+  }
+
   .carousel-item {
-    width: 300px;
+    width: 280px;
+    scroll-snap-align: center;
   }
 
   .carousel-image-wrapper {
-    height: 400px;
+    height: 380px;
+    border-radius: 16px;
   }
 
   .carousel-overlay {
@@ -246,29 +330,105 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
+  .stats-dashboard {
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+  }
+
+  .stat-item {
+    min-width: 70px;
+  }
+
+  .stat-number {
+    font-size: 1.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.6875rem;
+  }
+
+  .stat-divider {
+    font-size: 1rem;
+  }
+
+  .carousel-container {
+    padding: 1rem 0;
+  }
+
+  .carousel-track {
+    gap: 1.25rem;
+    animation: scroll 40s linear infinite;
+  }
+
   .carousel-item {
-    width: 300px;
+    width: 240px;
   }
 
   .carousel-image-wrapper {
-    height: 400px;
+    height: 320px;
+    border-radius: 14px;
   }
 
   .carousel-overlay {
-    padding: 1.5rem;
+    padding: 1.25rem;
   }
 
   .carousel-title {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
 
   .carousel-count {
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
   }
 
   .carousel-container::before,
   .carousel-container::after {
-    width: 50px;
+    width: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-dashboard {
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+  }
+
+  .stat-item {
+    min-width: 60px;
+  }
+
+  .stat-number {
+    font-size: 1.125rem;
+  }
+
+  .stat-label {
+    font-size: 0.625rem;
+  }
+
+  .carousel-item {
+    width: 200px;
+  }
+
+  .carousel-image-wrapper {
+    height: 280px;
+    border-radius: 12px;
+  }
+
+  .carousel-overlay {
+    padding: 1rem;
+  }
+
+  .carousel-title {
+    font-size: 1.125rem;
+  }
+
+  .carousel-count {
+    font-size: 0.8125rem;
+  }
+
+  .carousel-container::before,
+  .carousel-container::after {
+    width: 20px;
   }
 }

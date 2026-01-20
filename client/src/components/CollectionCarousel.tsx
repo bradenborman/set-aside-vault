@@ -8,6 +8,12 @@ interface CollectionCarouselProps {
 
 export const CollectionCarousel = ({ collections }: CollectionCarouselProps) => {
   const navigate = useNavigate();
+  const [isPaused, setIsPaused] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  // Minimum swipe distance (in px) to trigger navigation
+  const minSwipeDistance = 50;
 
   if (collections.length === 0) {
     return (
@@ -24,6 +30,35 @@ export const CollectionCarousel = ({ collections }: CollectionCarouselProps) => 
   // Calculate stats
   const totalItems = collections.reduce((sum, col) => sum + (col.itemCount ?? col.items.length), 0);
   const storiesCount = 3; // TODO: Get from actual stories data
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+    setIsPaused(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) {
+      setIsPaused(false);
+      return;
+    }
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    // Optional: Add logic to navigate between collections on swipe
+    if (isLeftSwipe || isRightSwipe) {
+      // Swipe detected - could add navigation logic here
+      console.log(isLeftSwipe ? 'Swiped left' : 'Swiped right');
+    }
+
+    setIsPaused(false);
+  };
 
   return (
     <>
@@ -45,7 +80,12 @@ export const CollectionCarousel = ({ collections }: CollectionCarouselProps) => 
       </div>
 
       <div className="carousel-container">
-        <div className="carousel-track">
+        <div 
+          className={`carousel-track ${isPaused ? 'paused' : ''}`}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           {duplicatedCollections.map((collection, index) => (
             <div
               key={`${collection.id}-${index}`}
@@ -57,6 +97,9 @@ export const CollectionCarousel = ({ collections }: CollectionCarouselProps) => 
                   src={collection.coverPhoto || collection.items[0]?.url}
                   alt={collection.name}
                   className="carousel-image"
+                  draggable={false}
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div className="carousel-overlay">
                   <h3 className="carousel-title">{collection.name}</h3>

@@ -16,6 +16,15 @@ export const Gallery = ({ collections, loading = false, singleCollection = false
   const [cardPosition, setCardPosition] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const lastScrollY = useRef<number>(0);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  // Detect touch device
+  useEffect(() => {
+    const checkTouchDevice = () => {
+      setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    };
+    checkTouchDevice();
+  }, []);
 
   // Clear spotlight when collection changes
   useEffect(() => {
@@ -109,16 +118,19 @@ export const Gallery = ({ collections, loading = false, singleCollection = false
         setTimeout(() => {
           // Scroll the card into view smoothly before spotlighting
           if (cardElement) {
+            // Use different scroll behavior for touch devices
+            const scrollBehavior = isTouchDevice ? 'smooth' : 'smooth';
             cardElement.scrollIntoView({
-              behavior: 'smooth',
+              behavior: scrollBehavior,
               block: 'center',
               inline: 'center'
             });
             
             // Delay the spotlight effect to let scroll complete
+            // Longer delay for touch devices to ensure smooth scrolling
             setTimeout(() => {
               setSpotlightId(itemId);
-            }, 300);
+            }, isTouchDevice ? 400 : 300);
           } else {
             setSpotlightId(itemId);
           }
@@ -126,8 +138,9 @@ export const Gallery = ({ collections, loading = false, singleCollection = false
       } else {
         // No existing spotlight, proceed normally
         if (cardElement) {
+          const scrollBehavior = isTouchDevice ? 'smooth' : 'smooth';
           cardElement.scrollIntoView({
-            behavior: 'smooth',
+            behavior: scrollBehavior,
             block: 'center',
             inline: 'center'
           });
@@ -135,7 +148,7 @@ export const Gallery = ({ collections, loading = false, singleCollection = false
           // Delay the spotlight effect to let scroll complete
           setTimeout(() => {
             setSpotlightId(itemId);
-          }, 300);
+          }, isTouchDevice ? 400 : 300);
         } else {
           setSpotlightId(itemId);
         }
@@ -170,6 +183,8 @@ export const Gallery = ({ collections, loading = false, singleCollection = false
                   alt={item.title}
                   className="image"
                   loading="lazy"
+                  decoding="async"
+                  fetchpriority={spotlightId === item.id ? 'high' : 'auto'}
                 />
                 <p className="image-filename">{item.title}</p>
               </div>

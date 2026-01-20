@@ -73,69 +73,100 @@ function CollectionDetailView() {
 function Sidebar({ collections, activeCollectionId }: { collections: Collection[], activeCollectionId?: string }) {
   const navigate = useNavigate()
   const location = useLocation()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const isActive = (path: string) => location.pathname === path
 
   // TODO: Replace with actual auth check
   const isAdmin = true; // Placeholder - will be replaced with auth context
 
+  const handleNavigation = (path: string) => {
+    navigate(path)
+    setIsMobileMenuOpen(false) // Close menu after navigation on mobile
+  }
+
   return (
-    <aside className="sidebar">
-      <nav className="sidebar-nav">
-        <button
-          className={`nav-item ${isActive('/') ? 'active' : ''}`}
-          onClick={() => navigate('/')}
-        >
-          <span className="nav-icon">🏠</span>
-          <span className="nav-label">All Collections</span>
-        </button>
+    <>
+      {/* Mobile hamburger button */}
+      <button 
+        className="mobile-menu-toggle"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        aria-label="Toggle menu"
+      >
+        <span className={`hamburger ${isMobileMenuOpen ? 'open' : ''}`}>
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      </button>
 
-        <button
-          className={`nav-item ${isActive('/stories') ? 'active' : ''}`}
-          onClick={() => navigate('/stories')}
-        >
-          <span className="nav-icon">📖</span>
-          <span className="nav-label">Stories</span>
-        </button>
+      {/* Overlay for mobile */}
+      {isMobileMenuOpen && (
+        <div 
+          className="mobile-menu-overlay"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
 
-        {/* TODO: Only show Admin if user is admin */}
-        {isAdmin && (
+      <aside className={`sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+        <nav className="sidebar-nav">
           <button
-            className={`nav-item ${isActive('/admin') ? 'active' : ''}`}
-            onClick={() => navigate('/admin')}
+            className={`nav-item ${isActive('/') ? 'active' : ''}`}
+            onClick={() => handleNavigation('/')}
           >
-            <span className="nav-icon">⚙️</span>
-            <span className="nav-label">Admin</span>
+            <span className="nav-icon">🏠</span>
+            <span className="nav-label">All Collections</span>
           </button>
-        )}
 
-        {collections.length > 0 && (
-          <>
-            <div className="nav-divider"></div>
-            <div className="nav-section-title">Collections</div>
-            {collections.map((collection) => (
-              <button
-                key={collection.id}
-                className={`nav-item nav-item-collection ${activeCollectionId === collection.id ? 'active' : ''}`}
-                onClick={() => navigate(`/collection/${collection.id}`)}
-              >
-                {collection.coverPhoto ? (
-                  <img 
-                    src={collection.coverPhoto} 
-                    alt={collection.name}
-                    className="nav-cover-photo"
-                  />
-                ) : (
-                  <span className="nav-icon">📁</span>
-                )}
-                <span className="nav-label">{collection.name}</span>
-                <span className="nav-count">{collection.itemCount ?? collection.items.length}</span>
-              </button>
-            ))}
-          </>
-        )}
-      </nav>
-    </aside>
+          <button
+            className={`nav-item ${isActive('/stories') ? 'active' : ''}`}
+            onClick={() => handleNavigation('/stories')}
+          >
+            <span className="nav-icon">📖</span>
+            <span className="nav-label">Stories</span>
+          </button>
+
+          {/* TODO: Only show Admin if user is admin */}
+          {isAdmin && (
+            <button
+              className={`nav-item ${isActive('/admin') ? 'active' : ''}`}
+              onClick={() => handleNavigation('/admin')}
+            >
+              <span className="nav-icon">⚙️</span>
+              <span className="nav-label">Admin</span>
+            </button>
+          )}
+
+          {collections.length > 0 && (
+            <>
+              <div className="nav-divider"></div>
+              <div className="nav-section-title">Collections</div>
+              {collections.map((collection) => (
+                <button
+                  key={collection.id}
+                  className={`nav-item nav-item-collection ${activeCollectionId === collection.id ? 'active' : ''}`}
+                  onClick={() => handleNavigation(`/collection/${collection.id}`)}
+                >
+                  {collection.coverPhoto ? (
+                    <img 
+                      src={collection.coverPhoto} 
+                      alt={collection.name}
+                      className="nav-cover-photo"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <span className="nav-icon">📁</span>
+                  )}
+                  <span className="nav-label">{collection.name}</span>
+                  <span className="nav-count">{collection.itemCount ?? collection.items.length}</span>
+                </button>
+              ))}
+            </>
+          )}
+        </nav>
+      </aside>
+    </>
   )
 }
 

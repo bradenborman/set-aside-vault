@@ -333,8 +333,13 @@
 }
 
 @media (max-width: 768px) {
+  .admin-container {
+    padding: 1rem 0.5rem;
+  }
+
   .admin-content {
     padding: 2rem 1.5rem;
+    border-radius: 12px;
   }
 
   .selector-title {
@@ -352,8 +357,42 @@
     min-height: 140px;
   }
 
+  .selector-label {
+    font-size: 1rem;
+  }
+
+  .selector-hint {
+    font-size: 0.8125rem;
+  }
+
   .panel-title {
     font-size: 1.25rem;
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .section-divider {
+    margin: 2rem 0;
+  }
+
+  .create-child {
+    margin-left: 1rem;
+  }
+
+  .hierarchy-arrow {
+    font-size: 1.25rem;
+  }
+
+  .manage-buttons {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .manage-btn {
+    width: 100%;
   }
 
   .hierarchy-section-nested {
@@ -368,6 +407,170 @@
 
   .action-btn {
     padding: 0.875rem 1.25rem;
+  }
+
+  /* Wizard forms */
+  .wizard-panel {
+    max-width: 100%;
+  }
+
+  .wizard-title {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .wizard-form {
+    gap: 1.5rem;
+  }
+
+  .form-label {
+    font-size: 0.8125rem;
+  }
+
+  .form-help {
+    font-size: 0.75rem;
+  }
+
+  .form-input,
+  .form-textarea {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.9375rem;
+  }
+
+  .form-textarea {
+    min-height: 100px;
+  }
+
+  .radio-group {
+    gap: 0.625rem;
+  }
+
+  .radio-label {
+    padding: 0.75rem 0.875rem;
+  }
+
+  .radio-text {
+    font-size: 0.875rem;
+  }
+
+  .metadata-add {
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .form-input-inline {
+    width: 100%;
+  }
+
+  .btn-add-metadata {
+    width: 100%;
+    padding: 0.625rem 1rem;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+  }
+
+  .btn-cancel,
+  .btn-submit,
+  .btn-delete-confirm {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+  }
+
+  .cover-photo-preview {
+    max-width: 100%;
+  }
+
+  .preview-image {
+    height: 180px;
+  }
+
+  .delete-warning {
+    padding: 1.25rem;
+  }
+
+  .warning-icon {
+    font-size: 2rem;
+  }
+
+  .warning-title {
+    font-size: 1rem;
+  }
+
+  .warning-text {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-container {
+    padding: 0.75rem 0.25rem;
+  }
+
+  .admin-content {
+    padding: 1.5rem 1rem;
+  }
+
+  .selector-title {
+    font-size: 1.125rem;
+  }
+
+  .selector-btn {
+    padding: 1.5rem 1rem;
+    min-height: 120px;
+  }
+
+  .selector-label {
+    font-size: 0.9375rem;
+  }
+
+  .wizard-title {
+    font-size: 1.25rem;
+  }
+
+  .section-title {
+    font-size: 1.125rem;
+  }
+
+  .create-btn {
+    padding: 0.875rem 1.25rem;
+    font-size: 0.9375rem;
+  }
+
+  .manage-subtitle {
+    font-size: 0.9375rem;
+  }
+
+  .manage-btn {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.875rem;
+  }
+
+  .form-input,
+  .form-textarea {
+    font-size: 0.875rem;
+  }
+
+  .radio-text {
+    font-size: 0.8125rem;
+  }
+
+  .metadata-item {
+    padding: 0.625rem 0.875rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .metadata-item-content {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .metadata-item-remove {
+    align-self: flex-end;
   }
 }
 

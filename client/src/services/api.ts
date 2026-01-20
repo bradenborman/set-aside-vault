@@ -113,3 +113,45 @@ export const createCollection = async (
   };
 };
 
+export interface CreateItemData {
+  collectionId: string;
+  title: string;
+  metadata?: Record<string, string>;
+}
+
+export const createItem = async (
+  data: CreateItemData,
+  image: File
+): Promise<any> => {
+  const formData = new FormData();
+  
+  // Add JSON data as a string
+  formData.append('data', JSON.stringify(data));
+  
+  // Add image file
+  formData.append('image', image);
+  
+  const response = await fetch(`${API_BASE_URL}/items`, {
+    method: 'POST',
+    body: formData,
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Failed to create item' }));
+    throw new Error(error.error || 'Failed to create item');
+  }
+  
+  const itemResponse = await response.json();
+  
+  // Transform backend response to frontend Item type
+  return {
+    id: itemResponse.id,
+    collectionId: itemResponse.collectionId,
+    url: itemResponse.url,
+    title: itemResponse.title,
+    filename: itemResponse.filename,
+    uploadedAt: new Date(itemResponse.uploadedAt),
+    metadata: itemResponse.metadata,
+  };
+};
+

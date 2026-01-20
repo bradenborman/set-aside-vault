@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { AspectRatio } from '../types';
-import { createCollection } from '../services/api';
+import { createCollection, createItem } from '../services/api';
 import './Admin.css';
 
 type ActionType = 'collections' | 'stories' | null;
@@ -295,11 +295,30 @@ export const Admin = () => {
     }
   };
 
-  const handleSubmitItem = () => {
-    // TODO: Submit to backend
-    console.log('Creating item:', itemForm);
-    alert(`Item "${itemForm.title}" created!\n\nCollection: ${itemForm.collectionId}\nImage: ${itemForm.file?.name || 'None'}\nMetadata: ${Object.keys(itemForm.metadata).length} fields`);
-    handleBackToActions();
+  const handleSubmitItem = async () => {
+    try {
+      if (!itemForm.file) {
+        alert('Item image is required');
+        return;
+      }
+
+      // Call the real API
+      const newItem = await createItem(
+        {
+          collectionId: itemForm.collectionId,
+          title: itemForm.title,
+          metadata: itemForm.metadata,
+        },
+        itemForm.file
+      );
+
+      console.log('Item created:', newItem);
+      alert(`Item "${newItem.title}" created successfully!`);
+      handleBackToActions();
+    } catch (error) {
+      console.error('Failed to create item:', error);
+      alert(`Failed to create item: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   // TODO: Implement handleEditCollection

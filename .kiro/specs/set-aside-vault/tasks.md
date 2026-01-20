@@ -72,10 +72,10 @@ This implementation plan tracks the development of the Set-Aside-Vault personal 
   - [x] 26.3 Update frontend to fetch real collections on load
   - [x] 26.4 Update sidebar to display real collections
 
-- [ ] 27. Implement Get Single Collection
-  - [ ] 27.1 Create CollectionService.findById() method
-  - [ ] 27.2 Create REST endpoint GET /api/collections/{id}
-  - [ ] 27.3 Update frontend collection detail view
+- [x] 27. Implement Get Single Collection
+  - [x] 27.1 Create CollectionService.findById() method
+  - [x] 27.2 Create REST endpoint GET /api/collections/{id}
+  - [x] 27.3 Update frontend collection detail view
 
 - [ ] 28. Implement Update Collection
   - [ ] 28.1 Create CollectionService.update() method
@@ -92,14 +92,14 @@ This implementation plan tracks the development of the Set-Aside-Vault personal 
   - [ ] 29.5 Connect Delete Collection wizard to real API
 
 #### Item Management
-- [ ] 30. Implement Create Item
-  - [ ] 30.1 Create ItemDTO and request/response models
-  - [ ] 30.2 Create ItemService with create logic
-  - [ ] 30.3 Implement item image upload to storage
-  - [ ] 30.4 Create REST endpoint POST /api/items
-  - [ ] 30.5 Add validation (collection, title, image required)
-  - [ ] 30.6 Update frontend API service to call endpoint
-  - [ ] 30.7 Connect Create Item wizard to real API
+- [x] 30. Implement Create Item
+  - [x] 30.1 Create ItemDTO and request/response models
+  - [x] 30.2 Create ItemService with create logic
+  - [x] 30.3 Implement item image upload to storage
+  - [x] 30.4 Create REST endpoint POST /api/items
+  - [x] 30.5 Add validation (collection, title, image required)
+  - [x] 30.6 Update frontend API service to call endpoint
+  - [x] 30.7 Connect Create Item wizard to real API
 
 - [ ] 31. Implement Get Items
   - [ ] 31.1 Create ItemService.findByCollectionId() method

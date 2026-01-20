@@ -24,6 +24,12 @@ public class CollectionController {
         return ResponseEntity.ok(collections);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<CollectionResponse> getCollectionById(@PathVariable String id) {
+        CollectionResponse collection = collectionService.findById(id);
+        return ResponseEntity.ok(collection);
+    }
+
     @PostMapping
     public ResponseEntity<CollectionResponse> createCollection(
             @RequestParam("data") String requestData,

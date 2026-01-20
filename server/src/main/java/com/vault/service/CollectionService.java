@@ -77,4 +77,13 @@ public class CollectionService {
                 })
                 .collect(Collectors.toList());
     }
+
+    @Transactional(readOnly = true)
+    public CollectionResponse findById(String id) {
+        Collection collection = collectionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Collection not found with id: " + id));
+        
+        int itemCount = (int) itemRepository.countByCollectionId(collection.getId());
+        return new CollectionResponse(collection, itemCount);
+    }
 }

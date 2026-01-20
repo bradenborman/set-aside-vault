@@ -92,6 +92,27 @@ export const fetchAllItems = async (): Promise<Item[]> => {
   }));
 };
 
+export const fetchItemById = async (id: string): Promise<Item> => {
+  const response = await fetch(`${API_BASE_URL}/items/${id}`);
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch item');
+  }
+  
+  const item = await response.json();
+  
+  // Transform backend response to frontend Item type
+  return {
+    id: item.id,
+    collectionId: item.collectionId,
+    url: item.url,
+    title: item.title,
+    filename: item.filename,
+    uploadedAt: new Date(item.uploadedAt),
+    metadata: item.metadata,
+  };
+};
+
 export const uploadImages = async (files: File[]): Promise<Collection> => {
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 1000));

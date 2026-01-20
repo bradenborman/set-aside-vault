@@ -24,6 +24,12 @@ public class ItemController {
         return ResponseEntity.ok(items);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ItemResponse> getItemById(@PathVariable String id) {
+        ItemResponse item = itemService.findById(id);
+        return ResponseEntity.ok(item);
+    }
+
     @PostMapping
     public ResponseEntity<ItemResponse> createItem(
             @RequestParam("data") String requestData,

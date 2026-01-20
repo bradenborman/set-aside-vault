@@ -48,6 +48,15 @@ task copyClientAssets {
 	dependsOn buildClient
 	
 	doLast {
+		// Delete stale static assets first
+		delete fileTree('src/main/resources/static') {
+			exclude '.gitkeep' // Keep .gitkeep if it exists
+		}
+		
+		// Delete stale index.html from templates
+		delete 'src/main/resources/templates/index.html'
+		delete fileTree('src/main/resources/templates/assets')
+		
 		// Copy all files except index.html to static
 		copy {
 			from '../client/dist'

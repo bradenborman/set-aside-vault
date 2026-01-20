@@ -107,10 +107,10 @@ This implementation plan tracks the development of the Set-Aside-Vault personal 
   - [x] 31.3 Create REST endpoint GET /api/items (all items)
   - [x] 31.4 Update frontend Gallery to fetch real items
 
-- [ ] 32. Implement Get Single Item
-  - [ ] 32.1 Create ItemService.findById() method
-  - [ ] 32.2 Create REST endpoint GET /api/items/{id}
-  - [ ] 32.3 Update frontend item detail view
+- [x] 32. Implement Get Single Item
+  - [x] 32.1 Create ItemService.findById() method
+  - [x] 32.2 Create REST endpoint GET /api/items/{id}
+  - [x] 32.3 Update frontend item detail view
 
 - [ ] 33. Implement Update Item
   - [ ] 33.1 Create ItemService.update() method

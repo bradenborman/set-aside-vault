@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import type { AspectRatio } from '../types';
-import { createCollection, createItem } from '../services/api';
+import { useState, useEffect } from 'react';
+import type { AspectRatio, Collection } from '../types';
+import { createCollection, createItem, fetchCollections } from '../services/api';
 import './Admin.css';
 
 type ActionType = 'collections' | 'stories' | null;
@@ -32,6 +32,8 @@ interface StoryFormData {
 export const Admin = () => {
   const [currentStep, setCurrentStep] = useState<WizardStep>('selector');
   const [selectedAction, setSelectedAction] = useState<ActionType>(null);
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [loadingCollections, setLoadingCollections] = useState<boolean>(true);
   const [collectionForm, setCollectionForm] = useState<CollectionFormData>({
     name: '',
     aspectRatio: 'square',
@@ -68,6 +70,23 @@ export const Admin = () => {
   const [storyCoverPreview, setStoryCoverPreview] = useState<string | null>(null);
   const [storyMetadataKey, setStoryMetadataKey] = useState('');
   const [storyMetadataValue, setStoryMetadataValue] = useState('');
+
+  // Fetch collections on mount
+  useEffect(() => {
+    loadCollections();
+  }, []);
+
+  const loadCollections = async () => {
+    try {
+      setLoadingCollections(true);
+      const data = await fetchCollections();
+      setCollections(data);
+    } catch (error) {
+      console.error('Failed to load collections:', error);
+    } finally {
+      setLoadingCollections(false);
+    }
+  };
 
   const handleSelectAction = (action: ActionType) => {
     setSelectedAction(action);
@@ -288,6 +307,10 @@ export const Admin = () => {
 
       console.log('Collection created:', newCollection);
       alert(`Collection "${newCollection.name}" created successfully!`);
+      
+      // Reload collections to update the dropdown
+      await loadCollections();
+      
       handleBackToActions();
     } catch (error) {
       console.error('Failed to create collection:', error);
@@ -714,11 +737,15 @@ export const Admin = () => {
                   required
                 >
                   <option value="">-- Select a collection --</option>
-                  <option value="1">Baseball Cards</option>
-                  <option value="2">Baseball Auto</option>
-                  <option value="3">Farm Country</option>
-                  <option value="4">SH Figuarts</option>
-                  <option value="5">Pokemon</option>
+                  {loadingCollections ? (
+                    <option disabled>Loading collections...</option>
+                  ) : (
+                    collections.map((collection) => (
+                      <option key={collection.id} value={collection.id}>
+                        {collection.name}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
 
@@ -881,11 +908,15 @@ export const Admin = () => {
                   required
                 >
                   <option value="">-- Select a collection to edit --</option>
-                  <option value="1">Baseball Cards</option>
-                  <option value="2">Baseball Auto</option>
-                  <option value="3">Farm Country</option>
-                  <option value="4">SH Figuarts</option>
-                  <option value="5">Pokemon</option>
+                  {loadingCollections ? (
+                    <option disabled>Loading collections...</option>
+                  ) : (
+                    collections.map((collection) => (
+                      <option key={collection.id} value={collection.id}>
+                        {collection.name}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
 
@@ -1068,11 +1099,15 @@ export const Admin = () => {
                   required
                 >
                   <option value="">-- Select a collection --</option>
-                  <option value="1">Baseball Cards (15 items)</option>
-                  <option value="2">Baseball Auto (8 items)</option>
-                  <option value="3">Farm Country (4 items)</option>
-                  <option value="4">SH Figuarts (2 items)</option>
-                  <option value="5">Pokemon (3 items)</option>
+                  {loadingCollections ? (
+                    <option disabled>Loading collections...</option>
+                  ) : (
+                    collections.map((collection) => (
+                      <option key={collection.id} value={collection.id}>
+                        {collection.name} ({collection.itemCount ?? collection.items.length} items)
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
 
@@ -1133,11 +1168,15 @@ export const Admin = () => {
                   required
                 >
                   <option value="">-- Select a collection --</option>
-                  <option value="1">Baseball Cards</option>
-                  <option value="2">Baseball Auto</option>
-                  <option value="3">Farm Country</option>
-                  <option value="4">SH Figuarts</option>
-                  <option value="5">Pokemon</option>
+                  {loadingCollections ? (
+                    <option disabled>Loading collections...</option>
+                  ) : (
+                    collections.map((collection) => (
+                      <option key={collection.id} value={collection.id}>
+                        {collection.name}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
 
@@ -1317,11 +1356,15 @@ export const Admin = () => {
                   required
                 >
                   <option value="">-- Select a collection --</option>
-                  <option value="1">Baseball Cards</option>
-                  <option value="2">Baseball Auto</option>
-                  <option value="3">Farm Country</option>
-                  <option value="4">SH Figuarts</option>
-                  <option value="5">Pokemon</option>
+                  {loadingCollections ? (
+                    <option disabled>Loading collections...</option>
+                  ) : (
+                    collections.map((collection) => (
+                      <option key={collection.id} value={collection.id}>
+                        {collection.name}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
 
@@ -1457,11 +1500,15 @@ export const Admin = () => {
                   onChange={(e) => setStoryForm({ ...storyForm, collectionId: e.target.value })}
                 >
                   <option value="">-- None --</option>
-                  <option value="1">Baseball Cards</option>
-                  <option value="2">Baseball Auto</option>
-                  <option value="3">Farm Country</option>
-                  <option value="4">SH Figuarts</option>
-                  <option value="5">Pokemon</option>
+                  {loadingCollections ? (
+                    <option disabled>Loading collections...</option>
+                  ) : (
+                    collections.map((collection) => (
+                      <option key={collection.id} value={collection.id}>
+                        {collection.name}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
 
@@ -1663,11 +1710,15 @@ export const Admin = () => {
                       onChange={(e) => setStoryForm({ ...storyForm, collectionId: e.target.value })}
                     >
                       <option value="">-- None --</option>
-                      <option value="1">Baseball Cards</option>
-                      <option value="2">Baseball Auto</option>
-                      <option value="3">Farm Country</option>
-                      <option value="4">SH Figuarts</option>
-                      <option value="5">Pokemon</option>
+                      {loadingCollections ? (
+                        <option disabled>Loading collections...</option>
+                      ) : (
+                        collections.map((collection) => (
+                          <option key={collection.id} value={collection.id}>
+                            {collection.name}
+                          </option>
+                        ))
+                      )}
                     </select>
                   </div>
 

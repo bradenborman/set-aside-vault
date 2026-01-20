@@ -89,4 +89,10 @@ public class ItemService {
                 .map(ItemResponse::new)
                 .collect(Collectors.toList());
     }
+
+    public ItemResponse findById(String id) {
+        Item item = itemRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Item not found with id: " + id));
+        return new ItemResponse(item);
+    }
 }

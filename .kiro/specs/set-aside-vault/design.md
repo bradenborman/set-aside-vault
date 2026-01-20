@@ -2,9 +2,9 @@
 
 ## Overview
 
-Set-Aside-Vault is a full-stack image gallery application built with a React/TypeScript frontend and Java Spring Boot backend. The application follows a multi-module Gradle build structure where the client build artifacts are integrated into the server's static resources, creating a single deployable JAR file.
+Set-Aside-Vault is a personal image gallery and collection management application with a modern React/TypeScript frontend. The application emphasizes a clean, professional user interface with features for organizing collections, managing items with flexible metadata, and sharing stories about treasured possessions.
 
-The architecture emphasizes simplicity: no authentication, no complex state management, and straightforward file-based storage on a Railway-mounted volume. The development approach is phased, starting with frontend design using mock data, then later integrating real backend storage and database functionality.
+The current implementation focuses on the frontend with a polished UI, flexible data models, and comprehensive admin functionality. The architecture uses a slate/charcoal color theme with glass-morphism effects, smooth animations, and an intuitive navigation structure.
 
 ## Architecture
 
@@ -14,705 +14,489 @@ The architecture emphasizes simplicity: no authentication, no complex state mana
 graph TB
     User[User Browser]
     Client[React Frontend<br/>TypeScript + Vite]
-    Server[Spring Boot Server<br/>Java 3.4.x]
-    Storage[Mounted Volume<br/>Image Storage]
+    Sidebar[Sidebar Navigation]
+    Gallery[Gallery View]
+    Admin[Admin Panel]
+    Stories[Stories View]
     
-    User -->|HTTP Requests| Server
-    Server -->|Serves Static Assets| Client
-    Client -->|API Calls| Server
-    Server -->|Read/Write Images| Storage
+    User -->|Interacts| Client
+    Client --> Sidebar
+    Client --> Gallery
+    Client --> Admin
+    Client --> Stories
     
-    subgraph "Gradle Multi-Module Build"
-        ClientBuild[Client Build Task<br/>npm + vite]
-        ServerBuild[Server Build Task<br/>Gradle]
-        ClientBuild -->|Copy Assets| ServerBuild
-    end
+    Sidebar -->|Navigate| Gallery
+    Sidebar -->|Navigate| Admin
+    Sidebar -->|Navigate| Stories
 ```
 
-### Module Structure
+### Component Structure
 
 ```
-set-aside-vault/
-├── client/                    # React + TypeScript + Vite (npm-based, no Gradle)
-│   ├── src/
-│   │   ├── components/       # React components
-│   │   ├── services/         # API service layer
-│   │   ├── types/            # TypeScript type definitions
-│   │   └── App.tsx           # Main application component
-│   ├── package.json          # npm dependencies and scripts
-│   ├── vite.config.ts        # Vite build configuration
-│   └── tsconfig.json         # TypeScript configuration
-├── server/                    # Spring Boot application (Gradle-based)
-│   ├── src/main/
-│   │   ├── java/
-│   │   │   └── com/vault/
-│   │   │       ├── controller/   # REST controllers
-│   │   │       ├── service/      # Business logic
-│   │   │       ├── model/        # Data models
-│   │   │       └── config/       # Configuration classes
-│   │   └── resources/
-│   │       ├── static/           # Client build artifacts (JS, CSS) - populated by build
-│   │       ├── templates/        # index.html - populated by build
-│   │       └── application.yml   # Spring configuration
-│   └── build.gradle          # Server module Gradle build (includes client build tasks)
-├── build.gradle               # Root build configuration
-├── settings.gradle            # Multi-module settings (includes 'client' and 'server')
-├── nixpacks.toml             # Railway build configuration
-└── railway.json              # Railway deployment configuration
-```
-
-**Note:** The client folder does not have a build.gradle file because it's a Node.js project managed by npm. The server's build.gradle file contains tasks that invoke npm commands to build the client. Gradle's settings.gradle includes 'client' as a module for organizational purposes, but the client build is executed via npm/Vite, not Gradle's Java build process.
-
-### Deployment Architecture
-
-The application deploys to Railway as a single Spring Boot JAR:
-- Railway uses Nixpacks to build the application with JDK 21
-- Gradle builds the client first, then the server
-- Client assets are bundled into the server JAR
-- Spring Boot serves both the frontend and API endpoints
-- Images are stored on a Railway-mounted volume at a configured path
-- The application binds to Railway's dynamic $PORT variable
-
-## Components and Interfaces
-
-### Frontend Components
-
-#### 1. Gallery Component
-**Responsibility:** Display image collections in a grid layout
-
-**Props:**
-```typescript
-interface GalleryProps {
-  collections: ImageCollection[];
-  onImageClick?: (image: Image) => void;
-}
-```
-
-**Behavior:**
-- Renders image collections in a responsive grid
-- Handles image loading states
-- Provides visual feedback for image interactions
-
-#### 2. Upload Component
-**Responsibility:** Handle image upload interface
-
-**Props:**
-```typescript
-interface UploadProps {
-  onUploadComplete: (collection: ImageCollection) => void;
-  onUploadError: (error: Error) => void;
-}
-```
-
-**Behavior:**
-- Provides file selection interface (drag-and-drop or file picker)
-- Shows upload progress
-- Validates file types (images only)
-- Calls API service to upload files
-
-#### 3. App Component
-**Responsibility:** Main application container and state management
-
-**State:**
-```typescript
-interface AppState {
-  collections: ImageCollection[];
-  loading: boolean;
-  error: string | null;
-}
-```
-
-**Behavior:**
-- Fetches initial gallery data on mount
-- Manages global application state
-- Coordinates between Gallery and Upload components
-
-### Frontend Services
-
-#### API Service
-**Responsibility:** Abstract HTTP communication with backend
-
-```typescript
-interface ApiService {
-  fetchCollections(): Promise<ImageCollection[]>;
-  uploadImages(files: File[]): Promise<ImageCollection>;
-}
-```
-
-**Implementation Notes:**
-- Uses fetch API or axios for HTTP requests
-- Handles error responses and network failures
-- Provides mock implementation for Phase 1 development
-
-### Frontend Types
-
-```typescript
-interface Image {
-  id: string;
-  url: string;
-  filename: string;
-  uploadedAt: Date;
-}
-
-interface ImageCollection {
-  id: string;
-  name: string;
-  images: Image[];
-  createdAt: Date;
-}
-```
-
-### Backend Components
-
-#### 1. ImageController
-**Responsibility:** REST API endpoints for image operations
-
-**Endpoints:**
-```java
-@RestController
-@RequestMapping("/api/images")
-public class ImageController {
-    
-    @GetMapping("/collections")
-    public ResponseEntity<List<ImageCollectionDTO>> getCollections();
-    
-    @PostMapping("/upload")
-    public ResponseEntity<ImageCollectionDTO> uploadImages(
-        @RequestParam("files") MultipartFile[] files
-    );
-    
-    @GetMapping("/file/{filename}")
-    public ResponseEntity<Resource> getImage(@PathVariable String filename);
-}
-```
-
-#### 2. ImageService
-**Responsibility:** Business logic for image management
-
-```java
-public interface ImageService {
-    List<ImageCollectionDTO> getAllCollections();
-    ImageCollectionDTO uploadImages(MultipartFile[] files) throws IOException;
-    Resource loadImageAsResource(String filename) throws IOException;
-}
-```
-
-**Implementation Notes:**
-- Generates unique filenames to prevent collisions
-- Organizes images into collections
-- Handles file I/O operations with the mounted volume
-- Phase 1: In-memory storage of metadata
-- Phase 2: Database persistence of metadata
-
-#### 3. StorageService
-**Responsibility:** Low-level file storage operations
-
-```java
-public interface StorageService {
-    String store(MultipartFile file) throws IOException;
-    Resource loadAsResource(String filename) throws IOException;
-    void init() throws IOException;
-}
-```
-
-**Implementation Notes:**
-- Manages the mounted volume directory
-- Creates necessary subdirectories
-- Handles file naming and path resolution
-- Validates storage availability
-
-#### 4. StaticResourceConfiguration
-**Responsibility:** Configure Spring Boot to serve frontend assets
-
-```java
-@Configuration
-public class StaticResourceConfiguration implements WebMvcConfigurer {
-    
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Configure static resource locations
-        // Configure image serving from mounted volume
-    }
-}
-```
-
-### Backend Models
-
-```java
-public class ImageCollectionDTO {
-    private String id;
-    private String name;
-    private List<ImageDTO> images;
-    private LocalDateTime createdAt;
-}
-
-public class ImageDTO {
-    private String id;
-    private String url;
-    private String filename;
-    private LocalDateTime uploadedAt;
-}
+client/
+├── src/
+│   ├── components/
+│   │   ├── Gallery.tsx          # Main gallery with spotlight effect
+│   │   ├── Gallery.css          # Gallery styling
+│   │   ├── CollectionCarousel.tsx  # All collections carousel view
+│   │   ├── CollectionCarousel.css
+│   │   ├── Admin.tsx            # Admin panel with CRUD wizards
+│   │   ├── Admin.css
+│   │   ├── Stories.tsx          # Stories display
+│   │   ├── Stories.css
+│   │   ├── Upload.tsx           # Upload component (legacy)
+│   │   └── Upload.css
+│   ├── services/
+│   │   └── api.ts              # API service with mock data
+│   ├── types/
+│   │   └── index.ts            # TypeScript type definitions
+│   ├── App.tsx                 # Main app with routing
+│   ├── App.css                 # App-level styling
+│   ├── index.css               # Global styles and CSS variables
+│   └── main.tsx                # Entry point
+├── package.json
+├── vite.config.ts
+└── tsconfig.json
 ```
 
 ## Data Models
 
-### Phase 1: In-Memory Storage
+### Core Types
 
-During Phase 1, the application uses in-memory data structures:
+```typescript
+export type AspectRatio = 'square' | 'portrait' | 'landscape';
 
-```java
-// In ImageService implementation
-private final Map<String, ImageCollectionDTO> collections = new ConcurrentHashMap<>();
-```
-
-Images are stored on the file system, but metadata (collection info, image references) is kept in memory. This allows frontend development without database complexity.
-
-### Phase 2: Database Schema (Future)
-
-```sql
-CREATE TABLE image_collections (
-    id VARCHAR(36) PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP NOT NULL
-);
-
-CREATE TABLE images (
-    id VARCHAR(36) PRIMARY KEY,
-    collection_id VARCHAR(36) NOT NULL,
-    filename VARCHAR(255) NOT NULL,
-    url VARCHAR(512) NOT NULL,
-    uploaded_at TIMESTAMP NOT NULL,
-    FOREIGN KEY (collection_id) REFERENCES image_collections(id)
-);
-```
-
-### File Storage Structure
-
-```
-/mounted-volume/
-└── images/
-    ├── {uuid-1}.jpg
-    ├── {uuid-2}.png
-    ├── {uuid-3}.jpg
-    └── ...
-```
-
-Files are stored with UUID-based names to prevent collisions. Original filenames are preserved in metadata.
-
-## Build System Design
-
-### Gradle Multi-Module Configuration
-
-**Root build.gradle:**
-```gradle
-plugins {
-    id 'java'
-}
-
-subprojects {
-    apply plugin: 'java'
-}
-```
-
-**settings.gradle:**
-```gradle
-rootProject.name = 'set-aside-vault'
-include 'server'
-// Note: 'client' is not included as a Gradle module since it's npm-based
-// The server build.gradle handles client building via npm commands
-```
-
-**Server build.gradle:**
-```gradle
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.4.x'
-    id 'io.spring.dependency-management' version '1.1.x'
-}
-
-// Task to build client
-task buildClient(type: Exec) {
-    workingDir '../client'
-    commandLine 'npm', 'install'
-    commandLine 'npm', 'run', 'build'
-}
-
-// Task to copy client assets
-task copyClientAssets(type: Copy, dependsOn: buildClient) {
-    from '../client/dist'
-    into 'src/main/resources/static'
-    
-    // Copy index.html separately to templates
-    from('../client/dist') {
-        include 'index.html'
-        into '../templates'
-    }
-}
-
-// Make server build depend on client build
-processResources.dependsOn copyClientAssets
-```
-
-### Build Execution Flow
-
-1. Developer runs `./gradlew build`
-2. Gradle executes `buildClient` task
-   - Runs `npm install` in client directory
-   - Runs `npm run build` (Vite build)
-   - Produces output in `client/dist/`
-3. Gradle executes `copyClientAssets` task
-   - Copies all files from `client/dist/` to `server/src/main/resources/static/`
-   - Copies `index.html` to `server/src/main/resources/templates/`
-4. Gradle executes `processResources` task
-   - Includes copied client assets in server JAR
-5. Gradle executes server compilation and packaging
-6. Final output: `server/build/libs/server.jar` containing both frontend and backend
-
-### Railway Deployment Configuration
-
-**nixpacks.toml:**
-```toml
-[phases.setup]
-nixPkgs = ['jdk21', 'nodejs']
-
-[phases.build]
-cmds = ['./gradlew build -x test']
-
-[start]
-cmd = 'java -jar server/build/libs/server.jar'
-```
-
-**railway.json:**
-```json
-{
-  "build": {
-    "builder": "NIXPACKS"
-  },
-  "deploy": {
-    "startCommand": "java -Dserver.port=$PORT -jar server/build/libs/server.jar",
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10
-  }
-}
-```
-
-### Spring Boot Configuration
-
-**application.yml:**
-```yaml
-server:
-  port: ${PORT:8080}
-
-spring:
-  servlet:
-    multipart:
-      max-file-size: 10MB
-      max-request-size: 50MB
+export interface Item {
+  // Core fields
+  id: string;
+  collectionId?: string;
+  url: string;
+  title: string;              // Display title
+  filename: string;           // Original filename
+  uploadedAt: Date;
   
-storage:
-  location: ${STORAGE_PATH:/tmp/uploads}
+  // Flexible metadata (key-value pairs)
+  metadata?: Record<string, string>;
+}
 
-timezone: America/Chicago
+export interface Collection {
+  // Core fields
+  id: string;
+  name: string;
+  items: Item[];
+  createdAt: Date;
+  coverPhoto?: string;
+  aspectRatio: AspectRatio;   // Display aspect ratio for items
+  
+  // Flexible metadata (key-value pairs)
+  metadata?: Record<string, string>;
+}
+
+export interface Story {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: Date;
+  updatedAt?: Date;
+  itemId?: string;            // Optional link to item
+  collectionId?: string;      // Optional link to collection
+  coverImage?: string;
+  tags?: string[];
+}
 ```
 
+### Design Rationale
 
-## Correctness Properties
+**Flexible Metadata:**
+- Items and Collections use `Record<string, string>` for metadata instead of rigid fields
+- Allows users to define custom fields without schema changes
+- Metadata is displayed dynamically in the UI
+- Examples: Description, Condition, Price, Acquired date, Tags, etc.
 
-A property is a characteristic or behavior that should hold true across all valid executions of a system—essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.
+**Aspect Ratios:**
+- Collections define how their items should be displayed
+- `square` (1:1): Memorabilia, figures
+- `portrait` (2:3): Trading cards
+- `landscape` (3:2): Photos
+- Gallery grid adjusts column width based on aspect ratio
 
-### Build System Properties
+## Components and Features
 
-Property 1: Client assets integration
-*For any* successful client build, all files from the client/dist directory should exist in server/src/main/resources/static after the build completes
-**Validates: Requirements 1.4, 2.3**
+### 1. Sidebar Navigation
 
-Property 2: Build execution order
-*For any* Gradle build execution, the client build artifacts should exist before the server build task processes resources
-**Validates: Requirements 2.1**
+**Location:** Fixed left sidebar (280px width)
 
-Property 3: Index.html template placement
-*For any* successful build, the index.html file should exist in server/src/main/resources/templates directory
-**Validates: Requirements 2.4**
+**Features:**
+- Main navigation items (All Collections, Stories, Admin)
+- Collections list with cover photo thumbnails (40x40px)
+- Active state highlighting with gradient background
+- Item count badges for each collection
 
-### Deployment Properties
+**Styling:**
+- Slate/charcoal background (rgb(51, 65, 85))
+- Glass-morphism effects
+- Smooth hover transitions
 
-Property 4: Dynamic port binding
-*For any* valid port number provided via PORT environment variable, the server should bind to that port
-**Validates: Requirements 3.4**
+### 2. Gallery Component
 
-### Gallery Display Properties
+**Responsibility:** Display items in a responsive grid with spotlight effect
 
-Property 5: Complete collection display
-*For any* set of image collections, the gallery component should render all collections without omission
-**Validates: Requirements 4.1**
+**Key Features:**
+- **Responsive Grid:** Adjusts based on collection's aspect ratio
+  - Portrait: 280px min width
+  - Square: 320px min width
+  - Landscape: 360px min width
+- **Spotlight Effect:**
+  - Click item to spotlight (scales 1.15x, white border, shadow)
+  - Other items dim to 30% opacity with grayscale
+  - Smooth scroll-to-center before spotlight activates
+  - Auto-dismiss on scroll (50px threshold)
+  - Auto-dismiss when changing collections
+  - Clear previous spotlight before applying new one (100ms delay)
+- **Metadata Panel:**
+  - Slides out from behind spotlighted item
+  - Same size as spotlighted card
+  - Smart positioning (left/right based on card position)
+  - Displays title and dynamic metadata fields
+  - Collapse button (« or ») to close
+  - No transitions on position (instant snap)
+- **Bottom Gradient:** Subtle fade effect at bottom of viewport
+- **Dynamic Padding:** 
+  - 0px top normally, 150px when spotlight active
+  - 150px bottom always (for scroll-to-center functionality)
 
-Property 6: Storage volume image loading
-*For any* image displayed in the gallery, its URL should reference the configured storage volume path
-**Validates: Requirements 4.3**
+**Props:**
+```typescript
+interface GalleryProps {
+  collections: Collection[];
+  loading?: boolean;
+  singleCollection?: boolean;
+}
+```
 
-Property 7: Unauthenticated gallery access
-*For any* request to view the gallery, the system should return the gallery content without requiring authentication credentials
-**Validates: Requirements 4.4, 9.1**
+### 3. Collection Carousel
 
-### Upload Properties
+**Responsibility:** Display all collections in an infinite scrolling carousel
 
-Property 8: Image file acceptance
-*For any* valid image file (JPEG, PNG, GIF, WebP), the upload service should accept the file without rejection
-**Validates: Requirements 5.2**
+**Features:**
+- Large cards (400x500px) showing collection cover photos
+- 60-second loop animation (pauses on hover)
+- Gradient overlay on cards
+- Shows collection name and item count on hover
+- Smooth infinite scroll effect
 
-Property 9: Storage volume persistence
-*For any* uploaded image file, the file should exist in the configured storage volume directory after upload completes
-**Validates: Requirements 5.3, 7.1, 7.4**
+**Location:** Home page (All Collections view)
 
-Property 10: Upload-fetch round trip
-*For any* uploaded image collection, fetching all collections immediately after upload should include the newly uploaded collection with all its images
-**Validates: Requirements 5.4**
+### 4. Admin Panel
 
-Property 11: Multiple file upload handling
-*For any* collection of valid image files uploaded together, all files should be stored and associated with the same collection
-**Validates: Requirements 5.5**
+**Responsibility:** Complete CRUD operations for Collections, Items, and Stories
 
-### Static Serving Properties
+**Structure:**
+- **Step 1:** Select category (Collections & Items / Stories)
+- **Step 2:** Choose action type
+  - **Create Section:** Hierarchical buttons
+    - Collection button
+    - Item button (indented with ↳ arrow)
+  - **Manage Section:** Edit/Delete buttons for each type
 
-Property 12: Static asset serving
-*For any* file in the server/src/main/resources/static directory, requesting that file's path should return the file content
-**Validates: Requirements 6.1, 6.3**
+**Wizards:**
 
-Property 13: Image file serving
-*For any* image file in the storage volume, requesting the image via its URL should return the image content
-**Validates: Requirements 6.4**
+**Create Collection:**
+- Name (required)
+- Aspect Ratio (required): Square/Portrait/Landscape radio buttons
+- Cover Photo (required): File upload with preview
+- Metadata (required): Dynamic key-value pairs (at least one)
 
-### Persistence Properties
+**Create Item:**
+- Collection selection (required): Dropdown
+- Title (required)
+- Image (required): File upload with preview
+- Metadata (required): Dynamic key-value pairs (at least one)
+- TODO: Preview should match target collection's aspect ratio
 
-Property 14: Restart persistence
-*For any* image stored before a server restart, the image should remain accessible and retrievable after the server restarts
-**Validates: Requirements 7.2**
+**Create Story:**
+- Title (required)
+- Content (required): Large textarea
+- Cover Image (optional): File upload with preview
+- Link to Collection (optional): Dropdown
+- Link to Item (optional): Dropdown (shows when collection selected)
+- Metadata (optional): Dynamic key-value pairs
 
-### Authentication Properties
+**Edit Wizards:**
+- Select existing item from dropdown
+- Pre-populate form with existing data (TODO: needs backend)
+- Update button
 
-Property 15: Unauthenticated upload access
-*For any* upload request without authentication credentials, the system should accept and process the upload
-**Validates: Requirements 9.2**
+**Delete Wizards:**
+- Select item from dropdown
+- Show warning with red alert box
+- Confirm deletion with red button
 
-## Error Handling
+**Styling:**
+- Professional slate/charcoal theme
+- Clean borders, no bright gradients
+- Red styling for delete actions
+- Form validation (disabled buttons until requirements met)
 
-### File Upload Errors
+### 5. Stories Component
 
-**Invalid File Type:**
-- Validation: Check file MIME type and extension
-- Response: HTTP 400 Bad Request with descriptive error message
-- User Feedback: Display error message in upload component
+**Responsibility:** Display collection stories
 
-**File Size Exceeded:**
-- Validation: Check against configured max file size (10MB per file, 50MB per request)
-- Response: HTTP 413 Payload Too Large
-- User Feedback: Display size limit and current file size
+**Features:**
+- Grid layout of story cards
+- Each card shows: cover image, title, date, collection badge, content preview
+- No header (removed for cleaner look)
 
-**Storage Full:**
-- Detection: Catch IOException during file write
-- Response: HTTP 507 Insufficient Storage
-- User Feedback: Inform user to contact administrator
+### 6. Stats Dashboard
 
-**Corrupted File:**
-- Detection: Attempt to read image metadata
-- Response: HTTP 400 Bad Request
-- User Feedback: Inform user file is corrupted or invalid
+**Location:** Home page, above carousel
 
-### File Serving Errors
+**Features:**
+- Subtle stats display
+- Shows: Collections count, Items count, Stories count
+- Minimal, professional styling
 
-**File Not Found:**
-- Detection: File doesn't exist in storage
-- Response: HTTP 404 Not Found
-- User Feedback: Display placeholder image or error message
+## Styling System
 
-**Read Permission Error:**
-- Detection: IOException during file read
-- Response: HTTP 500 Internal Server Error
-- Logging: Log error with file path for debugging
+### Color Palette
 
-### Build Errors
+**Primary Colors:**
+- Background: rgb(51, 65, 85) - Slate/charcoal
+- Text Primary: var(--gray-900)
+- Text Secondary: var(--gray-600)
+- Border: var(--border)
 
-**Client Build Failure:**
-- Detection: npm build returns non-zero exit code
-- Response: Gradle build fails with clear error message
-- Resolution: Check npm logs, verify dependencies
+**Accent Colors:**
+- Primary: var(--primary) - Indigo
+- Secondary: var(--secondary) - Purple
+- Delete/Danger: #ef4444 - Red
 
-**Asset Copy Failure:**
-- Detection: Copy task fails
-- Response: Gradle build fails
-- Resolution: Verify source and destination paths exist
+### CSS Variables
 
-### Configuration Errors
+Defined in `client/src/index.css`:
+- `--primary`: Indigo gradient start
+- `--secondary`: Purple gradient end
+- `--gray-*`: Gray scale (50-900)
+- `--border`: Border color
+- `--shadow`: Box shadow
+- `--shadow-xl`: Large box shadow
+- `--transition`: Standard transition timing
 
-**Missing Storage Path:**
-- Detection: Storage location not configured or doesn't exist
-- Response: Application fails to start with clear error message
-- Resolution: Set STORAGE_PATH environment variable or create directory
+### Design Principles
 
-**Port Binding Failure:**
-- Detection: Port already in use
-- Response: Application fails to start
-- Resolution: Change port or stop conflicting process
+1. **Professional & Mature:** No "kid-made" aesthetics
+2. **Glass-morphism:** Subtle backdrop blur effects
+3. **Smooth Animations:** Cubic-bezier easing for natural motion
+4. **Consistent Spacing:** 1rem base unit
+5. **Responsive:** Mobile-first approach
+6. **Accessibility:** Proper contrast ratios, semantic HTML
+
+## Routing
+
+**Routes:**
+- `/` - Home (All Collections carousel + stats)
+- `/collection/:id` - Single collection gallery view
+- `/stories` - Stories page
+- `/admin` - Admin panel
+- `/upload` - Legacy upload page (redirects to admin)
+
+**Navigation:**
+- React Router DOM for client-side routing
+- Sidebar navigation for main routes
+- Collection list in sidebar for direct collection access
+
+## State Management
+
+**Current Approach:** React useState hooks
+
+**State Locations:**
+- **App.tsx:** Collections data, loading states
+- **Gallery.tsx:** Spotlight state, metadata panel state, scroll positions
+- **Admin.tsx:** Form states, wizard step state, preview states
+
+**Future Considerations:**
+- Context API for global state (collections, user preferences)
+- React Query for server state management (when backend integrated)
+
+## Mock Data
+
+**Location:** `client/src/services/api.ts`
+
+**Collections:**
+1. Baseball Cards (15 items, portrait)
+2. Baseball Auto (8 items, square)
+3. Farm Country (4 items, landscape)
+4. SH Figuarts (2 items, square)
+5. Pokemon (3 items, portrait)
+
+**Sample Metadata:**
+- First two Baseball Cards items have full metadata (Description, Condition, Price, Acquired, Tags)
+- Other items have minimal data
+
+## Key Implementation Details
+
+### Spotlight Effect Logic
+
+1. User clicks item
+2. If another item is spotlighted:
+   - Clear spotlight (100ms pause)
+3. Scroll item to center (smooth, 300ms)
+4. Apply spotlight effect
+5. Calculate metadata panel position (350ms delay)
+6. Display metadata panel (instant, no transition)
+
+### Metadata Display
+
+- Metadata panel loops through `metadata` object
+- Displays each key-value pair dynamically
+- No hardcoded fields
+- Title shown at top
+- Collapse button on edge closest to card
+
+### Admin Form Validation
+
+**Collection:**
+- Name must have text
+- Cover photo must be uploaded
+- At least one metadata field required
+
+**Item:**
+- Collection must be selected
+- Title must have text
+- Image must be uploaded
+- At least one metadata field required
+
+**Story:**
+- Title must have text
+- Content must have text
+- Other fields optional
+
+### Aspect Ratio Grid Behavior
+
+**Portrait (2:3):**
+- Grid: `repeat(auto-fill, minmax(280px, 1fr))`
+- Cards: `aspect-ratio: 2/3`
+
+**Square (1:1):**
+- Grid: `repeat(auto-fill, minmax(320px, 1fr))`
+- Cards: `aspect-ratio: 1`
+
+**Landscape (3:2):**
+- Grid: `repeat(auto-fill, minmax(360px, 1fr))`
+- Cards: `aspect-ratio: 3/2`
+
+## Future Enhancements
+
+### Backend Integration
+- Spring Boot REST API
+- File storage on mounted volume
+- Database for metadata persistence
+- Real upload/edit/delete operations
+
+### Additional Features
+- Search and filter collections
+- Bulk operations (multi-select)
+- Image editing (crop, rotate)
+- Export collections
+- Sharing and permissions
+- Tags and categories
+- Advanced metadata fields (dates, numbers, dropdowns)
+
+### Performance Optimizations
+- Image lazy loading (already implemented)
+- Thumbnail generation
+- Virtual scrolling for large collections
+- Image compression
+
+### User Experience
+- Keyboard navigation
+- Drag-and-drop reordering
+- Undo/redo operations
+- Favorites/bookmarks
+- Collection templates
 
 ## Testing Strategy
 
-### Dual Testing Approach
+### Current Testing Needs
 
-The application will use both unit tests and property-based tests to ensure comprehensive coverage:
+**Component Tests:**
+- Gallery rendering with different aspect ratios
+- Spotlight effect behavior
+- Metadata panel positioning
+- Admin form validation
+- Routing navigation
 
-- **Unit tests**: Verify specific examples, edge cases, and error conditions
-- **Property tests**: Verify universal properties across all inputs
+**Integration Tests:**
+- Complete CRUD workflows
+- Upload → Display flow
+- Edit → Update flow
+- Delete → Remove flow
 
-Both testing approaches are complementary and necessary. Unit tests catch concrete bugs and validate specific scenarios, while property-based tests verify general correctness across a wide range of inputs.
+**Visual Regression Tests:**
+- Spotlight animations
+- Metadata panel transitions
+- Responsive layouts
+- Theme consistency
 
-### Unit Testing
+### Future Testing (with Backend)
 
-**Frontend Unit Tests (Vitest + React Testing Library):**
-- Component rendering with specific props
-- User interaction handling (clicks, file selection)
-- Error state display
-- Loading state display
-- API service mock integration
+**API Tests:**
+- CRUD endpoints
+- File upload handling
+- Error responses
+- Authentication (if added)
 
-**Backend Unit Tests (JUnit 5 + Mockito):**
-- Controller endpoint responses
-- Service layer business logic
-- Error handling for specific scenarios
-- Configuration loading
-- File validation logic
+**E2E Tests:**
+- Complete user workflows
+- Cross-browser compatibility
+- Mobile responsiveness
 
-**Example Unit Tests:**
-- Upload component displays error when file type is invalid
-- Gallery component shows loading spinner while fetching
-- ImageService generates unique filenames
-- StorageService creates directory if it doesn't exist
-- Root path "/" returns index.html
-
-### Property-Based Testing
-
-**Property Testing Library:** 
-- Frontend: fast-check (TypeScript)
-- Backend: jqwik (Java)
-
-**Configuration:**
-- Minimum 100 iterations per property test
-- Each test tagged with: **Feature: set-aside-vault, Property {number}: {property_text}**
-
-**Frontend Property Tests:**
-- Property 5: Gallery renders all collections (generate random collections, verify all rendered)
-- Property 10: Upload-fetch round trip (upload random images, verify they appear in fetch)
-
-**Backend Property Tests:**
-- Property 4: Dynamic port binding (generate random valid ports, verify binding)
-- Property 8: Image file acceptance (generate random valid image files, verify acceptance)
-- Property 9: Storage volume persistence (upload random images, verify files exist in storage)
-- Property 11: Multiple file upload (generate random number of files, verify all stored)
-- Property 12: Static asset serving (generate random static files, verify serving)
-- Property 13: Image file serving (generate random images, verify serving)
-- Property 14: Restart persistence (store random images, simulate restart, verify accessibility)
-- Property 15: Unauthenticated upload (generate random uploads without auth, verify acceptance)
-
-**Build System Property Tests:**
-- Property 1: Client assets integration (verify all dist files copied)
-- Property 2: Build execution order (verify client artifacts exist before server build)
-- Property 3: Index.html placement (verify index.html in templates)
-
-### Integration Testing
-
-**End-to-End Scenarios:**
-- Complete upload flow: select files → upload → verify in gallery
-- Gallery load on fresh application start
-- Static asset serving through Spring Boot
-- Image serving from storage volume
-
-### Test Organization
-
-```
-client/
-└── src/
-    └── __tests__/
-        ├── components/
-        │   ├── Gallery.test.tsx
-        │   └── Upload.test.tsx
-        └── properties/
-            ├── gallery.properties.test.ts
-            └── upload.properties.test.ts
-
-server/
-└── src/test/java/
-    └── com/vault/
-        ├── controller/
-        │   └── ImageControllerTest.java
-        ├── service/
-        │   └── ImageServiceTest.java
-        └── properties/
-            ├── UploadPropertiesTest.java
-            ├── StoragePropertiesTest.java
-            └── ServingPropertiesTest.java
-```
-
-### Testing During Phased Development
-
-**Phase 1 (Current - Frontend with Mock Data):**
-- Frontend unit tests with mock API responses
-- Frontend property tests with generated mock data
-- Build system tests
-- Static serving tests
-
-**Phase 2 (Future - Backend Integration):**
-- Backend unit tests with real storage
-- Backend property tests with file I/O
-- Integration tests with real API calls
-- Database persistence tests (when added)
-
-## Implementation Notes
-
-### Phase 1 Development Focus
-
-The initial implementation focuses on:
-1. Setting up the Gradle multi-module build system
-2. Creating the React frontend with mock data
-3. Implementing the upload UI (non-functional in Phase 1)
-4. Configuring Spring Boot to serve static assets
-5. Ensuring local development workflow works smoothly
-
-### Phase 2 Additions
-
-Future work will include:
-1. Implementing real file upload handling
-2. Adding database for metadata persistence
-3. Implementing collection management features
-4. Adding image metadata (EXIF data, dimensions)
-5. Implementing image thumbnails for performance
-
-### Development Workflow
+## Development Workflow
 
 **Local Development:**
 ```bash
-# Build everything
-./gradlew build
-
-# Run server (serves frontend + API)
-./gradlew :server:bootRun
-
-# Frontend development (with hot reload)
+# Install dependencies
 cd client
+npm install
+
+# Run dev server (hot reload)
 npm run dev
-# Configure Vite proxy to point to Spring Boot server
+
+# Build for production
+npm run build
 ```
 
-**Railway Deployment:**
-```bash
-# Railway automatically runs:
-./gradlew build -x test
-java -Dserver.port=$PORT -jar server/build/libs/server.jar
-```
+**Code Organization:**
+- Components in `src/components/`
+- Each component has its own CSS file
+- Shared types in `src/types/`
+- API service in `src/services/`
+- Global styles in `src/index.css`
 
-### Key Design Decisions
+**Naming Conventions:**
+- Components: PascalCase (Gallery.tsx)
+- CSS files: Match component name (Gallery.css)
+- CSS classes: kebab-case (metadata-card)
+- TypeScript interfaces: PascalCase (GalleryProps)
 
-1. **Single JAR Deployment**: Frontend assets bundled into Spring Boot JAR for simplicity
-2. **No Authentication**: Simplifies initial implementation, can be added later
-3. **File-Based Storage**: Uses mounted volume instead of object storage for simplicity
-4. **In-Memory Metadata (Phase 1)**: Allows frontend development without database complexity
-5. **UUID Filenames**: Prevents collisions and security issues with user-provided names
-6. **Phased Approach**: Validates frontend design before backend complexity
+## Design Decisions
+
+1. **Flexible Metadata:** Record<string, string> instead of rigid schema
+2. **Aspect Ratios:** Collection-level setting for consistent display
+3. **Spotlight Effect:** Enhances focus without modal overlay
+4. **Hierarchical Admin:** Clear parent-child relationship (Collection → Item)
+5. **No Authentication:** Simplifies initial implementation
+6. **Mock Data First:** Validates UX before backend complexity
+7. **Professional Theme:** Slate/charcoal for mature aesthetic
+8. **Dynamic Metadata Display:** Loop-based rendering for flexibility
+
+## Design Decisions
+
+1. **Flexible Metadata:** Record<string, string> instead of rigid schema
+2. **Aspect Ratios:** Collection-level setting for consistent display
+3. **Spotlight Effect:** Enhances focus without modal overlay
+4. **Hierarchical Admin:** Clear parent-child relationship (Collection → Item)
+5. **No Authentication:** Simplifies initial implementation
+6. **Mock Data First:** Validates UX before backend complexity
+7. **Professional Theme:** Slate/charcoal for mature aesthetic
+8. **Dynamic Metadata Display:** Loop-based rendering for flexibility

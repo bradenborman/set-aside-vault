@@ -23,6 +23,7 @@ export interface Collection {
   createdAt: Date;
   coverPhoto?: string; // URL of the cover photo for the collection
   aspectRatio: AspectRatio; // Display aspect ratio for items in this collection
+  itemCount?: number; // Item count from backend (when items array is not populated)
   
   // Flexible metadata for displayable fields (description, tags, etc.)
   metadata?: Record<string, string>;

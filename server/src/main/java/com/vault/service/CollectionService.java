@@ -5,17 +5,24 @@ import com.vault.dto.CollectionResponse;
 import com.vault.dto.CreateCollectionRequest;
 import com.vault.entity.Collection;
 import com.vault.repository.CollectionRepository;
+import com.vault.repository.ItemRepository;
 import com.vault.validation.CollectionValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class CollectionService {
 
     @Autowired
     private CollectionRepository collectionRepository;
+
+    @Autowired
+    private ItemRepository itemRepository;
 
     @Autowired
     private StorageService storageService;
@@ -57,5 +64,17 @@ public class CollectionService {
         } catch (Exception e) {
             throw new RuntimeException("Failed to create collection: " + e.getMessage(), e);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<CollectionResponse> findAll() {
+        List<Collection> collections = collectionRepository.findAll();
+        
+        return collections.stream()
+                .map(collection -> {
+                    int itemCount = (int) itemRepository.countByCollectionId(collection.getId());
+                    return new CollectionResponse(collection, itemCount);
+                })
+                .collect(Collectors.toList());
     }
 }

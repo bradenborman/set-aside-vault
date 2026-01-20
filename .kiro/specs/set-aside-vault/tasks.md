@@ -66,11 +66,11 @@ This implementation plan tracks the development of the Set-Aside-Vault personal 
   - [x] 25.6 Update frontend API service to call endpoint
   - [x] 25.7 Connect Create Collection wizard to real API
 
-- [ ] 26. Implement Get Collections
-  - [ ] 26.1 Create CollectionService.findAll() method
-  - [ ] 26.2 Create REST endpoint GET /api/collections
-  - [ ] 26.3 Update frontend to fetch real collections on load
-  - [ ] 26.4 Update sidebar to display real collections
+- [x] 26. Implement Get Collections
+  - [x] 26.1 Create CollectionService.findAll() method
+  - [x] 26.2 Create REST endpoint GET /api/collections
+  - [x] 26.3 Update frontend to fetch real collections on load
+  - [x] 26.4 Update sidebar to display real collections
 
 - [ ] 27. Implement Get Single Collection
   - [ ] 27.1 Create CollectionService.findById() method

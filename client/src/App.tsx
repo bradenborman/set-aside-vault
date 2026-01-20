@@ -74,7 +74,7 @@ function Sidebar({ collections, activeCollectionId }: { collections: Collection[
                   <span className="nav-icon">📁</span>
                 )}
                 <span className="nav-label">{collection.name}</span>
-                <span className="nav-count">{collection.items.length}</span>
+                <span className="nav-count">{collection.itemCount ?? collection.items.length}</span>
               </button>
             ))}
           </>

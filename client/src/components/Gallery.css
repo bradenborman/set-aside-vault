@@ -527,7 +527,7 @@
   .metadata-close {
     top: 1rem;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) rotate(90deg);
     width: 48px;
     height: 28px;
     border-radius: 8px;
@@ -537,6 +537,10 @@
   .metadata-close-left {
     left: 50%;
     right: auto;
+  }
+
+  .metadata-content {
+    padding: 3.5rem 1.25rem 1.25rem 1.25rem;
   }
 
   @keyframes slideInUp {

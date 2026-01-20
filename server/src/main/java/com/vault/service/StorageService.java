@@ -82,6 +82,23 @@ public class StorageService {
     }
 
     /**
+     * Load a file as a Resource
+     */
+    public org.springframework.core.io.Resource loadAsResource(String filename) {
+        try {
+            Path file = load(filename);
+            org.springframework.core.io.Resource resource = new org.springframework.core.io.UrlResource(file.toUri());
+            if (resource.exists() || resource.isReadable()) {
+                return resource;
+            } else {
+                throw new RuntimeException("Could not read file: " + filename);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Could not read file: " + filename, e);
+        }
+    }
+
+    /**
      * Delete a file
      */
     public void delete(String filename) {

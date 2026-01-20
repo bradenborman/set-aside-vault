@@ -154,12 +154,12 @@ This implementation plan tracks the development of the Set-Aside-Vault personal 
   - [ ] 38.4 Connect Delete Story wizard to real API
 
 #### Image Serving
-- [ ] 39. Implement Image Serving Endpoint
-  - [ ] 39.1 Create StorageService for file operations
-  - [ ] 39.2 Create REST endpoint GET /api/images/{filename}
-  - [ ] 39.3 Add proper content-type headers
-  - [ ] 39.4 Handle file not found errors
-  - [ ] 39.5 Update frontend to use real image URLs
+- [x] 39. Implement Image Serving Endpoint
+  - [x] 39.1 Create StorageService for file operations
+  - [x] 39.2 Create REST endpoint GET /api/images/{filename}
+  - [x] 39.3 Add proper content-type headers
+  - [x] 39.4 Handle file not found errors
+  - [x] 39.5 Update frontend to use real image URLs
 
 #### Configuration & Deployment
 - [ ] 40. Configure CORS for frontend-backend communication

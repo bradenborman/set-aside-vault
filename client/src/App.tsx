@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, useParams } from 'react-router-dom'
 import { Gallery } from './components/Gallery'
 import { Upload } from './components/Upload'
 import { Stories } from './components/Stories'
 import { Admin } from './components/Admin'
 import { CollectionCarousel } from './components/CollectionCarousel'
-import { fetchCollections } from './services/api'
+import { fetchCollections, fetchCollectionById } from './services/api'
 import type { Collection } from './types'
 import './App.css'
 
@@ -14,6 +14,61 @@ import './App.css'
 // - Check if user is admin
 // - Show/hide Upload nav item based on admin status
 // - Protect upload route
+
+function CollectionDetailView() {
+  const { collectionId } = useParams<{ collectionId: string }>();
+  const [collection, setCollection] = useState<Collection | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (collectionId) {
+      loadCollection(collectionId);
+    }
+  }, [collectionId]);
+
+  const loadCollection = async (id: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await fetchCollectionById(id);
+      setCollection(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load collection');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (error) {
+    return (
+      <div className="error-message">
+        <p>❌ {error}</p>
+        <button onClick={() => collectionId && loadCollection(collectionId)} className="btn-retry">
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="gallery-loading">
+        <p>Loading collection...</p>
+      </div>
+    );
+  }
+
+  if (!collection) {
+    return (
+      <div className="gallery-empty">
+        <p>Collection not found</p>
+      </div>
+    );
+  }
+
+  return <Gallery collections={[collection]} loading={false} singleCollection />;
+}
 
 function Sidebar({ collections, activeCollectionId }: { collections: Collection[], activeCollectionId?: string }) {
   const navigate = useNavigate()
@@ -156,19 +211,7 @@ function AppContent() {
           />
           <Route
             path="/collection/:collectionId"
-            element={
-              <>
-                {error && (
-                  <div className="error-message">
-                    <p>❌ {error}</p>
-                    <button onClick={loadCollections} className="btn-retry">
-                      Retry
-                    </button>
-                  </div>
-                )}
-                <Gallery collections={collections} loading={loading} singleCollection />
-              </>
-            }
+            element={<CollectionDetailView />}
           />
           <Route
             path="/admin"

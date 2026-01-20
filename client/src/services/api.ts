@@ -25,6 +25,28 @@ export const fetchCollections = async (): Promise<Collection[]> => {
   }));
 };
 
+export const fetchCollectionById = async (id: string): Promise<Collection> => {
+  const response = await fetch(`${API_BASE_URL}/collections/${id}`);
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch collection');
+  }
+  
+  const col = await response.json();
+  
+  // Transform backend response to frontend Collection type
+  return {
+    id: col.id,
+    name: col.name,
+    createdAt: new Date(col.createdAt),
+    coverPhoto: col.coverPhoto ? `/api/images/${col.coverPhoto}` : undefined,
+    aspectRatio: col.aspectRatio.toLowerCase() as 'square' | 'portrait' | 'landscape',
+    metadata: col.metadata,
+    items: [], // Items will be loaded separately when viewing a collection
+    itemCount: col.itemCount, // Item count from backend
+  };
+};
+
 export const uploadImages = async (files: File[]): Promise<Collection> => {
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 1000));

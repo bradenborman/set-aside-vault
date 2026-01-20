@@ -17,13 +17,21 @@ export const Gallery = ({ collections, loading = false, singleCollection = false
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const lastScrollY = useRef<number>(0);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Detect touch device
+  // Detect touch device and mobile
   useEffect(() => {
     const checkTouchDevice = () => {
       setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
     };
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
     checkTouchDevice();
+    checkMobile();
+    
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   // Clear spotlight when collection changes
@@ -213,7 +221,7 @@ export const Gallery = ({ collections, loading = false, singleCollection = false
               onClick={() => setSpotlightId(null)}
               aria-label="Close"
             >
-              {panelPosition === 'right' ? '«' : '»'}
+              {isMobile ? '↓' : (panelPosition === 'right' ? '«' : '»')}
             </button>
             <div className="metadata-content">
               <h4 className="metadata-title">{spotlightedItem.title}</h4>

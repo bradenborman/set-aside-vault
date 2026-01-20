@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/items")
 @CrossOrigin(origins = "*")
@@ -15,6 +17,12 @@ public class ItemController {
 
     @Autowired
     private ItemService itemService;
+
+    @GetMapping
+    public ResponseEntity<List<ItemResponse>> getAllItems() {
+        List<ItemResponse> items = itemService.findAll();
+        return ResponseEntity.ok(items);
+    }
 
     @PostMapping
     public ResponseEntity<ItemResponse> createItem(

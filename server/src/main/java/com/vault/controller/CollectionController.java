@@ -1,7 +1,9 @@
 package com.vault.controller;
 
 import com.vault.dto.CollectionResponse;
+import com.vault.dto.ItemResponse;
 import com.vault.service.CollectionService;
+import com.vault.service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,9 @@ public class CollectionController {
     @Autowired
     private CollectionService collectionService;
 
+    @Autowired
+    private ItemService itemService;
+
     @GetMapping
     public ResponseEntity<List<CollectionResponse>> getAllCollections() {
         List<CollectionResponse> collections = collectionService.findAll();
@@ -28,6 +33,12 @@ public class CollectionController {
     public ResponseEntity<CollectionResponse> getCollectionById(@PathVariable String id) {
         CollectionResponse collection = collectionService.findById(id);
         return ResponseEntity.ok(collection);
+    }
+
+    @GetMapping("/{id}/items")
+    public ResponseEntity<List<ItemResponse>> getItemsByCollectionId(@PathVariable String id) {
+        List<ItemResponse> items = itemService.findByCollectionId(id);
+        return ResponseEntity.ok(items);
     }
 
     @PostMapping

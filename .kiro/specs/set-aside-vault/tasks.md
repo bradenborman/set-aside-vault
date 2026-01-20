@@ -101,11 +101,11 @@ This implementation plan tracks the development of the Set-Aside-Vault personal 
   - [x] 30.6 Update frontend API service to call endpoint
   - [x] 30.7 Connect Create Item wizard to real API
 
-- [ ] 31. Implement Get Items
-  - [ ] 31.1 Create ItemService.findByCollectionId() method
-  - [ ] 31.2 Create REST endpoint GET /api/collections/{id}/items
-  - [ ] 31.3 Create REST endpoint GET /api/items (all items)
-  - [ ] 31.4 Update frontend Gallery to fetch real items
+- [x] 31. Implement Get Items
+  - [x] 31.1 Create ItemService.findByCollectionId() method
+  - [x] 31.2 Create REST endpoint GET /api/collections/{id}/items
+  - [x] 31.3 Create REST endpoint GET /api/items (all items)
+  - [x] 31.4 Update frontend Gallery to fetch real items
 
 - [ ] 32. Implement Get Single Item
   - [ ] 32.1 Create ItemService.findById() method

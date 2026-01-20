@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class ItemService {
 
@@ -67,5 +70,23 @@ public class ItemService {
         } catch (Exception e) {
             throw new RuntimeException("Failed to create item: " + e.getMessage(), e);
         }
+    }
+
+    public List<ItemResponse> findByCollectionId(String collectionId) {
+        // Verify collection exists
+        collectionRepository.findById(collectionId)
+                .orElseThrow(() -> new IllegalArgumentException("Collection not found with id: " + collectionId));
+
+        List<Item> items = itemRepository.findByCollectionId(collectionId);
+        return items.stream()
+                .map(ItemResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<ItemResponse> findAll() {
+        List<Item> items = itemRepository.findAll();
+        return items.stream()
+                .map(ItemResponse::new)
+                .collect(Collectors.toList());
     }
 }

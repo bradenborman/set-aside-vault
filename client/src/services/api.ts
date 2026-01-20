@@ -1,4 +1,4 @@
-import type { Collection } from '../types';
+import type { Collection, Item } from '../types';
 
 // API base URL - use proxy in development, direct path in production
 const API_BASE_URL = '/api';
@@ -34,6 +34,9 @@ export const fetchCollectionById = async (id: string): Promise<Collection> => {
   
   const col = await response.json();
   
+  // Fetch items for this collection
+  const items = await fetchItemsByCollectionId(id);
+  
   // Transform backend response to frontend Collection type
   return {
     id: col.id,
@@ -42,9 +45,51 @@ export const fetchCollectionById = async (id: string): Promise<Collection> => {
     coverPhoto: col.coverPhoto ? `/api/images/${col.coverPhoto}` : undefined,
     aspectRatio: col.aspectRatio.toLowerCase() as 'square' | 'portrait' | 'landscape',
     metadata: col.metadata,
-    items: [], // Items will be loaded separately when viewing a collection
+    items: items, // Load items from API
     itemCount: col.itemCount, // Item count from backend
   };
+};
+
+export const fetchItemsByCollectionId = async (collectionId: string): Promise<Item[]> => {
+  const response = await fetch(`${API_BASE_URL}/collections/${collectionId}/items`);
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch items');
+  }
+  
+  const itemsData = await response.json();
+  
+  // Transform backend response to frontend Item type
+  return itemsData.map((item: any) => ({
+    id: item.id,
+    collectionId: item.collectionId,
+    url: item.url,
+    title: item.title,
+    filename: item.filename,
+    uploadedAt: new Date(item.uploadedAt),
+    metadata: item.metadata,
+  }));
+};
+
+export const fetchAllItems = async (): Promise<Item[]> => {
+  const response = await fetch(`${API_BASE_URL}/items`);
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch items');
+  }
+  
+  const itemsData = await response.json();
+  
+  // Transform backend response to frontend Item type
+  return itemsData.map((item: any) => ({
+    id: item.id,
+    collectionId: item.collectionId,
+    url: item.url,
+    title: item.title,
+    filename: item.filename,
+    uploadedAt: new Date(item.uploadedAt),
+    metadata: item.metadata,
+  }));
 };
 
 export const uploadImages = async (files: File[]): Promise<Collection> => {

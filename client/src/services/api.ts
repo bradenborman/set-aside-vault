@@ -311,3 +311,25 @@ export const updateItem = async (
     metadata: itemResponse.metadata,
   };
 };
+
+export const deleteCollection = async (id: string): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/collections/${id}`, {
+    method: 'DELETE',
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Failed to delete collection' }));
+    throw new Error(error.error || 'Failed to delete collection');
+  }
+};
+
+export const deleteItem = async (id: string): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/items/${id}`, {
+    method: 'DELETE',
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Failed to delete item' }));
+    throw new Error(error.error || 'Failed to delete item');
+  }
+};

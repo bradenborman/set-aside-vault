@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { AspectRatio, Collection, Item } from '../types';
-import { createCollection, createItem, fetchCollections, updateCollection, fetchItemsByCollectionId, fetchItemById, updateItem } from '../services/api';
+import { createCollection, createItem, fetchCollections, updateCollection, fetchItemsByCollectionId, fetchItemById, updateItem, deleteCollection, deleteItem } from '../services/api';
 import './Admin.css';
 
 type ActionType = 'collections' | 'stories' | null;
@@ -366,18 +366,54 @@ export const Admin = () => {
     setCurrentStep('delete-item');
   };
 
-  const handleConfirmDeleteCollection = () => {
-    // TODO: Submit to backend
-    console.log('Deleting collection:', selectedCollectionId);
-    alert(`Collection deleted!`);
-    handleBackToActions();
+  const handleConfirmDeleteCollection = async () => {
+    try {
+      if (!selectedCollectionId) {
+        alert('Please select a collection to delete');
+        return;
+      }
+
+      // Call the real API
+      await deleteCollection(selectedCollectionId);
+
+      console.log('Collection deleted:', selectedCollectionId);
+      alert('Collection deleted successfully!');
+      
+      // Reload collections to update the list
+      await loadCollections();
+      
+      // Reset selection
+      setSelectedCollectionId('');
+      
+      handleBackToActions();
+    } catch (error) {
+      console.error('Failed to delete collection:', error);
+      alert(`Failed to delete collection: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
-  const handleConfirmDeleteItem = () => {
-    // TODO: Submit to backend
-    console.log('Deleting item:', selectedItemId);
-    alert(`Item deleted!`);
-    handleBackToActions();
+  const handleConfirmDeleteItem = async () => {
+    try {
+      if (!selectedItemId) {
+        alert('Please select an item to delete');
+        return;
+      }
+
+      // Call the real API
+      await deleteItem(selectedItemId);
+
+      console.log('Item deleted:', selectedItemId);
+      alert('Item deleted successfully!');
+      
+      // Reset selection
+      setSelectedItemId('');
+      setAvailableItems([]);
+      
+      handleBackToActions();
+    } catch (error) {
+      console.error('Failed to delete item:', error);
+      alert(`Failed to delete item: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   const handleUpdateCollection = async () => {

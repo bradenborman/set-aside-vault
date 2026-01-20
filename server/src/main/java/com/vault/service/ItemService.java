@@ -150,4 +150,25 @@ public class ItemService {
             throw new RuntimeException("Failed to update item: " + e.getMessage(), e);
         }
     }
+
+    @Transactional
+    public void deleteItem(String id) {
+        // Find existing item
+        Item item = itemRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Item not found with id: " + id));
+
+        // Delete associated image from storage
+        String filename = item.getFilename();
+        if (filename != null && !filename.isEmpty()) {
+            try {
+                storageService.delete(filename);
+            } catch (Exception e) {
+                // Log but don't fail the delete if file deletion fails
+                System.err.println("Failed to delete item image: " + filename);
+            }
+        }
+
+        // Delete item from database
+        itemRepository.delete(item);
+    }
 }

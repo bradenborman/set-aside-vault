@@ -57,4 +57,10 @@ public class CollectionController {
         CollectionResponse response = collectionService.updateCollection(id, requestData, coverPhoto);
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCollection(@PathVariable String id) {
+        collectionService.deleteCollection(id);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -137,4 +137,42 @@ public class CollectionService {
             throw new RuntimeException("Failed to update collection: " + e.getMessage(), e);
         }
     }
+
+    @Transactional
+    public void deleteCollection(String id) {
+        // Find existing collection
+        Collection collection = collectionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Collection not found with id: " + id));
+
+        // Find all items in this collection
+        List<com.vault.entity.Item> items = itemRepository.findByCollectionId(id);
+
+        // Delete all item images from storage
+        for (com.vault.entity.Item item : items) {
+            if (item.getFilename() != null && !item.getFilename().isEmpty()) {
+                try {
+                    storageService.delete(item.getFilename());
+                } catch (Exception e) {
+                    // Log but continue with deletion
+                    System.err.println("Failed to delete item image: " + item.getFilename());
+                }
+            }
+        }
+
+        // Delete all items from database
+        itemRepository.deleteAll(items);
+
+        // Delete collection cover photo from storage
+        if (collection.getCoverPhoto() != null && !collection.getCoverPhoto().isEmpty()) {
+            try {
+                storageService.delete(collection.getCoverPhoto());
+            } catch (Exception e) {
+                // Log but continue with deletion
+                System.err.println("Failed to delete cover photo: " + collection.getCoverPhoto());
+            }
+        }
+
+        // Delete collection from database
+        collectionRepository.delete(collection);
+    }
 }

@@ -84,12 +84,12 @@ This implementation plan tracks the development of the Set-Aside-Vault personal 
   - [x] 28.4 Load existing data in Edit Collection wizard
   - [x] 28.5 Connect Edit Collection wizard to real API
 
-- [ ] 29. Implement Delete Collection
-  - [ ] 29.1 Create CollectionService.delete() method
-  - [ ] 29.2 Handle cascade delete or orphan items logic
-  - [ ] 29.3 Delete associated cover photo from storage
-  - [ ] 29.4 Create REST endpoint DELETE /api/collections/{id}
-  - [ ] 29.5 Connect Delete Collection wizard to real API
+- [x] 29. Implement Delete Collection
+  - [x] 29.1 Create CollectionService.delete() method
+  - [x] 29.2 Handle cascade delete or orphan items logic
+  - [x] 29.3 Delete associated cover photo from storage
+  - [x] 29.4 Create REST endpoint DELETE /api/collections/{id}
+  - [x] 29.5 Connect Delete Collection wizard to real API
 
 #### Item Management
 - [x] 30. Implement Create Item
@@ -119,11 +119,11 @@ This implementation plan tracks the development of the Set-Aside-Vault personal 
   - [x] 33.4 Load existing data in Edit Item wizard
   - [x] 33.5 Connect Edit Item wizard to real API
 
-- [ ] 34. Implement Delete Item
-  - [ ] 34.1 Create ItemService.delete() method
-  - [ ] 34.2 Delete associated image from storage
-  - [ ] 34.3 Create REST endpoint DELETE /api/items/{id}
-  - [ ] 34.4 Connect Delete Item wizard to real API
+- [x] 34. Implement Delete Item
+  - [x] 34.1 Create ItemService.delete() method
+  - [x] 34.2 Delete associated image from storage
+  - [x] 34.3 Create REST endpoint DELETE /api/items/{id}
+  - [x] 34.4 Connect Delete Item wizard to real API
 
 #### Story Management
 - [ ] 35. Implement Create Story

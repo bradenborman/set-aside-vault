@@ -184,7 +184,7 @@ export const Gallery = ({ collections, loading = false, singleCollection = false
                   className="image"
                   loading="lazy"
                   decoding="async"
-                  fetchpriority={spotlightId === item.id ? 'high' : 'auto'}
+                  fetchPriority={spotlightId === item.id ? 'high' : 'auto'}
                 />
                 <p className="image-filename">{item.title}</p>
               </div>

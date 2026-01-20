@@ -48,4 +48,48 @@ public class MediaController {
             )));
         }
     }
+
+    @DeleteMapping("/{filename}")
+    public ResponseEntity<Map<String, Object>> deleteMedia(@PathVariable String filename) {
+        try {
+            boolean deleted = mediaService.deleteMedia(filename);
+            
+            if (deleted) {
+                return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "File deleted successfully",
+                    "filename", filename
+                ));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", "File not found or could not be deleted"
+                ));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "error", e.getMessage()
+            ));
+        }
+    }
+
+    @DeleteMapping("/bulk")
+    public ResponseEntity<Map<String, Object>> bulkDeleteMedia(@RequestBody List<String> filenames) {
+        try {
+            int deletedCount = mediaService.bulkDeleteMedia(filenames);
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Files deleted successfully",
+                "deletedCount", deletedCount,
+                "totalRequested", filenames.size()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "error", e.getMessage()
+            ));
+        }
+    }
 }

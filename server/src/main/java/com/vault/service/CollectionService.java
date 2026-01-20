@@ -50,8 +50,12 @@ public class CollectionService {
             collection.setMetadata(request.getMetadata());
             collection.setItemCategories(request.getItemCategories());
 
-            // Handle cover photo upload
-            if (coverPhoto != null && !coverPhoto.isEmpty()) {
+            // Handle cover photo - either upload new or use existing
+            if (request.getExistingCoverPhoto() != null && !request.getExistingCoverPhoto().isEmpty()) {
+                // Use existing file from library
+                collection.setCoverPhoto(request.getExistingCoverPhoto());
+            } else if (coverPhoto != null && !coverPhoto.isEmpty()) {
+                // Upload new file
                 String filename = storageService.store(coverPhoto);
                 collection.setCoverPhoto(filename);
             }
@@ -111,8 +115,21 @@ public class CollectionService {
             collection.setMetadata(request.getMetadata());
             collection.setItemCategories(request.getItemCategories());
 
-            // Handle cover photo replacement if new photo provided
-            if (coverPhoto != null && !coverPhoto.isEmpty()) {
+            // Handle cover photo - either upload new, use existing, or keep current
+            if (request.getExistingCoverPhoto() != null && !request.getExistingCoverPhoto().isEmpty()) {
+                // Use existing file from library
+                collection.setCoverPhoto(request.getExistingCoverPhoto());
+                
+                // Delete old cover photo if it's different
+                if (oldCoverPhoto != null && !oldCoverPhoto.equals(request.getExistingCoverPhoto())) {
+                    try {
+                        storageService.delete(oldCoverPhoto);
+                    } catch (Exception e) {
+                        System.err.println("Failed to delete old cover photo: " + oldCoverPhoto);
+                    }
+                }
+            } else if (coverPhoto != null && !coverPhoto.isEmpty()) {
+                // Upload new file
                 String filename = storageService.store(coverPhoto);
                 collection.setCoverPhoto(filename);
 

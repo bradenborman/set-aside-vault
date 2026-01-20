@@ -8,6 +8,7 @@ public class UpdateItemRequest {
     private String title;
     private Map<String, String> metadata;
     private String category;
+    private String existingImage; // Optional: use existing file from library
 
     // Getters and Setters
     public String getCollectionId() {
@@ -40,5 +41,13 @@ public class UpdateItemRequest {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public String getExistingImage() {
+        return existingImage;
+    }
+
+    public void setExistingImage(String existingImage) {
+        this.existingImage = existingImage;
     }
 }

@@ -146,19 +146,22 @@ export interface CreateCollectionData {
   aspectRatio: 'square' | 'portrait' | 'landscape';
   metadata?: Record<string, string>;
   itemCategories?: string[];
+  existingCoverPhoto?: string;
 }
 
 export const createCollection = async (
   data: CreateCollectionData,
-  coverPhoto: File
+  coverPhoto?: File
 ): Promise<Collection> => {
   const formData = new FormData();
   
   // Add JSON data as a string
   formData.append('data', JSON.stringify(data));
   
-  // Add cover photo file
-  formData.append('coverPhoto', coverPhoto);
+  // Add cover photo file if provided
+  if (coverPhoto) {
+    formData.append('coverPhoto', coverPhoto);
+  }
   
   const response = await fetch(`${API_BASE_URL}/collections`, {
     method: 'POST',
@@ -191,19 +194,22 @@ export interface CreateItemData {
   title: string;
   metadata?: Record<string, string>;
   category?: string;
+  existingImage?: string;
 }
 
 export const createItem = async (
   data: CreateItemData,
-  image: File
+  image?: File
 ): Promise<any> => {
   const formData = new FormData();
   
   // Add JSON data as a string
   formData.append('data', JSON.stringify(data));
   
-  // Add image file
-  formData.append('image', image);
+  // Add image file if provided
+  if (image) {
+    formData.append('image', image);
+  }
   
   const response = await fetch(`${API_BASE_URL}/items`, {
     method: 'POST',
@@ -235,6 +241,7 @@ export interface UpdateCollectionData {
   aspectRatio: 'square' | 'portrait' | 'landscape';
   metadata?: Record<string, string>;
   itemCategories?: string[];
+  existingCoverPhoto?: string;
 }
 
 export const updateCollection = async (
@@ -283,6 +290,7 @@ export interface UpdateItemData {
   title: string;
   metadata?: Record<string, string>;
   category?: string;
+  existingImage?: string;
 }
 
 export const updateItem = async (

@@ -117,4 +117,53 @@ public class MediaService {
 
         return usedFilenames;
     }
+
+    public boolean deleteMedia(String filename) {
+        try {
+            // Check if file is in use
+            Set<String> usedFilenames = getUsedFilenames();
+            if (usedFilenames.contains(filename)) {
+                throw new RuntimeException("Cannot delete file that is in use: " + filename);
+            }
+
+            // Delete the file
+            Path filePath = Paths.get(storageLocation).resolve(filename);
+            return Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete file: " + e.getMessage(), e);
+        }
+    }
+
+    public int bulkDeleteMedia(List<String> filenames) {
+        Set<String> usedFilenames = getUsedFilenames();
+        int deletedCount = 0;
+        List<String> errors = new ArrayList<>();
+
+        for (String filename : filenames) {
+            try {
+                // Check if file is in use
+                if (usedFilenames.contains(filename)) {
+                    errors.add("Skipped file in use: " + filename);
+                    continue;
+                }
+
+                // Delete the file
+                Path filePath = Paths.get(storageLocation).resolve(filename);
+                if (Files.deleteIfExists(filePath)) {
+                    deletedCount++;
+                } else {
+                    errors.add("File not found: " + filename);
+                }
+            } catch (IOException e) {
+                errors.add("Failed to delete " + filename + ": " + e.getMessage());
+            }
+        }
+
+        // If there were errors but some files succeeded, we still return success with warnings
+        if (!errors.isEmpty() && deletedCount == 0) {
+            throw new RuntimeException("All deletions failed: " + String.join(", ", errors));
+        }
+
+        return deletedCount;
+    }
 }

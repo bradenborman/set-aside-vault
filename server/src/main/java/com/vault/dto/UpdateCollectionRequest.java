@@ -14,6 +14,8 @@ public class UpdateCollectionRequest {
 
     private java.util.List<String> itemCategories;
 
+    private String existingCoverPhoto; // Optional: use existing file from library
+
     // Getters and Setters
     public String getName() {
         return name;
@@ -45,5 +47,13 @@ public class UpdateCollectionRequest {
 
     public void setItemCategories(java.util.List<String> itemCategories) {
         this.itemCategories = itemCategories;
+    }
+
+    public String getExistingCoverPhoto() {
+        return existingCoverPhoto;
+    }
+
+    public void setExistingCoverPhoto(String existingCoverPhoto) {
+        this.existingCoverPhoto = existingCoverPhoto;
     }
 }

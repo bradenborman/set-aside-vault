@@ -54,8 +54,13 @@ public class ItemService {
             item.setMetadata(request.getMetadata());
             item.setCategory(request.getCategory());
 
-            // Handle image upload
-            if (image != null && !image.isEmpty()) {
+            // Handle image - either upload new or use existing
+            if (request.getExistingImage() != null && !request.getExistingImage().isEmpty()) {
+                // Use existing file from library
+                item.setFilename(request.getExistingImage());
+                item.setUrl("/api/images/" + request.getExistingImage());
+            } else if (image != null && !image.isEmpty()) {
+                // Upload new file
                 String filename = storageService.store(image);
                 item.setFilename(filename);
                 // Set URL to the API endpoint for serving images
@@ -124,8 +129,22 @@ public class ItemService {
             item.setMetadata(request.getMetadata());
             item.setCategory(request.getCategory());
 
-            // Handle image replacement if new image provided
-            if (image != null && !image.isEmpty()) {
+            // Handle image - either upload new, use existing, or keep current
+            if (request.getExistingImage() != null && !request.getExistingImage().isEmpty()) {
+                // Use existing file from library
+                item.setFilename(request.getExistingImage());
+                item.setUrl("/api/images/" + request.getExistingImage());
+                
+                // Delete old image if it's different
+                if (oldFilename != null && !oldFilename.equals(request.getExistingImage())) {
+                    try {
+                        storageService.delete(oldFilename);
+                    } catch (Exception e) {
+                        System.err.println("Failed to delete old item image: " + oldFilename);
+                    }
+                }
+            } else if (image != null && !image.isEmpty()) {
+                // Upload new file
                 String filename = storageService.store(image);
                 item.setFilename(filename);
                 item.setUrl("/api/images/" + filename);

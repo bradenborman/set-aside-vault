@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { AspectRatio, Collection, Item } from '../types';
 import { createCollection, createItem, fetchCollections, updateCollection, fetchItemsByCollectionId, fetchItemById, updateItem, deleteCollection, deleteItem } from '../services/api';
+import { ImageBrowser } from './ImageBrowser';
 import './Admin.css';
 
 type ActionType = 'collections' | 'stories' | 'media' | null;
@@ -47,6 +48,8 @@ export const Admin = () => {
   const [newMetadataKey, setNewMetadataKey] = useState('');
   const [newMetadataValue, setNewMetadataValue] = useState('');
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [coverPhotoMode, setCoverPhotoMode] = useState<'upload' | 'browse'>('upload');
+  const [selectedLibraryImage, setSelectedLibraryImage] = useState<string | null>(null);
   
   const [itemForm, setItemForm] = useState<ItemFormData>({
     collectionId: '',
@@ -57,6 +60,8 @@ export const Admin = () => {
   const [itemImagePreview, setItemImagePreview] = useState<string | null>(null);
   const [itemMetadataKey, setItemMetadataKey] = useState('');
   const [itemMetadataValue, setItemMetadataValue] = useState('');
+  const [itemImageMode, setItemImageMode] = useState<'upload' | 'browse'>('upload');
+  const [selectedItemLibraryImage, setSelectedItemLibraryImage] = useState<string | null>(null);
   const [availableItems, setAvailableItems] = useState<Item[]>([]);
   const [loadingItems, setLoadingItems] = useState<boolean>(false);
   
@@ -122,6 +127,8 @@ export const Admin = () => {
     setNewMetadataKey('');
     setNewMetadataValue('');
     setNewCategoryName('');
+    setCoverPhotoMode('upload');
+    setSelectedLibraryImage(null);
     
     // Reset item form
     setItemForm({
@@ -133,6 +140,8 @@ export const Admin = () => {
     setItemImagePreview(null);
     setItemMetadataKey('');
     setItemMetadataValue('');
+    setItemImageMode('upload');
+    setSelectedItemLibraryImage(null);
     
     // Reset story form
     setStoryForm({
@@ -326,7 +335,7 @@ export const Admin = () => {
 
   const handleSubmitCollection = async () => {
     try {
-      if (!collectionForm.coverPhoto) {
+      if (!collectionForm.coverPhoto && !selectedLibraryImage) {
         alert('Cover photo is required');
         return;
       }
@@ -338,8 +347,9 @@ export const Admin = () => {
           aspectRatio: collectionForm.aspectRatio,
           metadata: collectionForm.metadata,
           itemCategories: collectionForm.itemCategories,
+          existingCoverPhoto: selectedLibraryImage || undefined,
         },
-        collectionForm.coverPhoto
+        collectionForm.coverPhoto || undefined
       );
 
       console.log('Collection created:', newCollection);
@@ -357,7 +367,7 @@ export const Admin = () => {
 
   const handleSubmitItem = async () => {
     try {
-      if (!itemForm.file) {
+      if (!itemForm.file && !selectedItemLibraryImage) {
         alert('Item image is required');
         return;
       }
@@ -369,8 +379,9 @@ export const Admin = () => {
           title: itemForm.title,
           metadata: itemForm.metadata,
           category: itemForm.category,
+          existingImage: selectedItemLibraryImage || undefined,
         },
-        itemForm.file
+        itemForm.file || undefined
       );
 
       console.log('Item created:', newItem);
@@ -467,6 +478,7 @@ export const Admin = () => {
           aspectRatio: collectionForm.aspectRatio,
           metadata: collectionForm.metadata,
           itemCategories: collectionForm.itemCategories,
+          existingCoverPhoto: selectedLibraryImage || undefined,
         },
         collectionForm.coverPhoto || undefined
       );
@@ -499,6 +511,7 @@ export const Admin = () => {
           title: itemForm.title,
           metadata: itemForm.metadata,
           category: itemForm.category,
+          existingImage: selectedItemLibraryImage || undefined,
         },
         itemForm.file || undefined
       );
@@ -802,6 +815,19 @@ export const Admin = () => {
           </div>
         )}
 
+        {currentStep === 'media-library' && (
+          <div className="wizard-panel">
+            <button 
+              className="back-btn"
+              onClick={handleBackToActions}
+            >
+              ← Back
+            </button>
+
+            <ImageBrowser />
+          </div>
+        )}
+
         {currentStep === 'new-collection' && (
           <div className="wizard-panel">
             <button 
@@ -869,31 +895,67 @@ export const Admin = () => {
                 <label className="form-label">Cover Photo *</label>
                 <p className="form-help">Required - shown in sidebar and collection list</p>
                 
-                {!coverPhotoPreview ? (
-                  <input
-                    type="file"
-                    className="form-input-file"
-                    accept="image/*"
-                    onChange={handleCoverPhotoChange}
-                    required
-                  />
-                ) : (
-                  <div className="cover-photo-preview">
-                    <img 
-                      src={coverPhotoPreview} 
-                      alt="Cover preview" 
-                      className="preview-image"
+                {/* Toggle between Upload and Browse */}
+                <div className="upload-mode-toggle">
+                  <button
+                    type="button"
+                    className={`toggle-btn ${coverPhotoMode === 'upload' ? 'active' : ''}`}
+                    onClick={() => {
+                      setCoverPhotoMode('upload');
+                      setSelectedLibraryImage(null);
+                    }}
+                  >
+                    📤 Upload New
+                  </button>
+                  <button
+                    type="button"
+                    className={`toggle-btn ${coverPhotoMode === 'browse' ? 'active' : ''}`}
+                    onClick={() => {
+                      setCoverPhotoMode('browse');
+                      handleRemoveCoverPhoto();
+                    }}
+                  >
+                    📚 Browse Library
+                  </button>
+                </div>
+
+                {coverPhotoMode === 'upload' ? (
+                  !coverPhotoPreview ? (
+                    <input
+                      type="file"
+                      className="form-input-file"
+                      accept="image/*"
+                      onChange={handleCoverPhotoChange}
+                      required
                     />
-                    <div className="preview-overlay">
-                      <p className="preview-filename">{collectionForm.coverPhoto?.name}</p>
-                      <button
-                        type="button"
-                        className="btn-remove-photo"
-                        onClick={handleRemoveCoverPhoto}
-                      >
-                        ✕ Remove
-                      </button>
+                  ) : (
+                    <div className="cover-photo-preview">
+                      <img 
+                        src={coverPhotoPreview} 
+                        alt="Cover preview" 
+                        className="preview-image"
+                      />
+                      <div className="preview-overlay">
+                        <p className="preview-filename">{collectionForm.coverPhoto?.name}</p>
+                        <button
+                          type="button"
+                          className="btn-remove-photo"
+                          onClick={handleRemoveCoverPhoto}
+                        >
+                          ✕ Remove
+                        </button>
+                      </div>
                     </div>
+                  )
+                ) : (
+                  <div className="library-browser-container">
+                    <ImageBrowser
+                      onSelect={(filename) => {
+                        setSelectedLibraryImage(filename);
+                        setCoverPhotoPreview(`/api/images/${filename}`);
+                      }}
+                      selectedFilename={selectedLibraryImage || undefined}
+                    />
                   </div>
                 )}
               </div>
@@ -1009,7 +1071,7 @@ export const Admin = () => {
                   type="button"
                   className="btn-submit"
                   onClick={handleSubmitCollection}
-                  disabled={!collectionForm.name.trim() || !collectionForm.coverPhoto || Object.keys(collectionForm.metadata).length === 0}
+                  disabled={!collectionForm.name.trim() || (!collectionForm.coverPhoto && !selectedLibraryImage) || Object.keys(collectionForm.metadata).length === 0}
                 >
                   Create Collection
                 </button>
@@ -1094,36 +1156,72 @@ export const Admin = () => {
                 <label className="form-label">Image *</label>
                 <p className="form-help">Required - the main image for this item</p>
                 
+                {/* Toggle between Upload and Browse */}
+                <div className="upload-mode-toggle">
+                  <button
+                    type="button"
+                    className={`toggle-btn ${itemImageMode === 'upload' ? 'active' : ''}`}
+                    onClick={() => {
+                      setItemImageMode('upload');
+                      setSelectedItemLibraryImage(null);
+                    }}
+                  >
+                    📤 Upload New
+                  </button>
+                  <button
+                    type="button"
+                    className={`toggle-btn ${itemImageMode === 'browse' ? 'active' : ''}`}
+                    onClick={() => {
+                      setItemImageMode('browse');
+                      handleRemoveItemImage();
+                    }}
+                  >
+                    📚 Browse Library
+                  </button>
+                </div>
+                
                 {/* TODO: Make preview match the aspect ratio of the selected collection
                      - Look up the collection's aspectRatio from collectionId
                      - Apply appropriate aspect-ratio CSS to preview-image
                      - Square: 1/1, Portrait: 2/3, Landscape: 3/2 */}
                 
-                {!itemImagePreview ? (
-                  <input
-                    type="file"
-                    className="form-input-file"
-                    accept="image/*"
-                    onChange={handleItemImageChange}
-                    required
-                  />
-                ) : (
-                  <div className="cover-photo-preview">
-                    <img 
-                      src={itemImagePreview} 
-                      alt="Item preview" 
-                      className="preview-image"
+                {itemImageMode === 'upload' ? (
+                  !itemImagePreview ? (
+                    <input
+                      type="file"
+                      className="form-input-file"
+                      accept="image/*"
+                      onChange={handleItemImageChange}
+                      required
                     />
-                    <div className="preview-overlay">
-                      <p className="preview-filename">{itemForm.file?.name}</p>
-                      <button
-                        type="button"
-                        className="btn-remove-photo"
-                        onClick={handleRemoveItemImage}
-                      >
-                        ✕ Remove
-                      </button>
+                  ) : (
+                    <div className="cover-photo-preview">
+                      <img 
+                        src={itemImagePreview} 
+                        alt="Item preview" 
+                        className="preview-image"
+                      />
+                      <div className="preview-overlay">
+                        <p className="preview-filename">{itemForm.file?.name}</p>
+                        <button
+                          type="button"
+                          className="btn-remove-photo"
+                          onClick={handleRemoveItemImage}
+                        >
+                          ✕ Remove
+                        </button>
+                      </div>
                     </div>
+                  )
+                ) : (
+                  <div className="library-browser-container">
+                    <ImageBrowser
+                      onSelect={(filename) => {
+                        setSelectedItemLibraryImage(filename);
+                        setItemImagePreview(`/api/images/${filename}`);
+                      }}
+                      selectedFilename={selectedItemLibraryImage || undefined}
+                    />
                   </div>
                 )}
               </div>
@@ -1194,7 +1292,7 @@ export const Admin = () => {
                   type="button"
                   className="btn-submit"
                   onClick={handleSubmitItem}
-                  disabled={!itemForm.collectionId || !itemForm.title.trim() || !itemForm.file || Object.keys(itemForm.metadata).length === 0}
+                  disabled={!itemForm.collectionId || !itemForm.title.trim() || (!itemForm.file && !selectedItemLibraryImage) || Object.keys(itemForm.metadata).length === 0}
                 >
                   Create Item
                 </button>
@@ -1324,30 +1422,66 @@ export const Admin = () => {
                     <label className="form-label">Cover Photo</label>
                     <p className="form-help">Optional - upload new to replace existing</p>
                     
-                    {!coverPhotoPreview ? (
-                      <input
-                        type="file"
-                        className="form-input-file"
-                        accept="image/*"
-                        onChange={handleCoverPhotoChange}
-                      />
-                    ) : (
-                      <div className="cover-photo-preview">
-                        <img 
-                          src={coverPhotoPreview} 
-                          alt="Cover preview" 
-                          className="preview-image"
+                    {/* Toggle between Upload and Browse */}
+                    <div className="upload-mode-toggle">
+                      <button
+                        type="button"
+                        className={`toggle-btn ${coverPhotoMode === 'upload' ? 'active' : ''}`}
+                        onClick={() => {
+                          setCoverPhotoMode('upload');
+                          setSelectedLibraryImage(null);
+                        }}
+                      >
+                        📤 Upload New
+                      </button>
+                      <button
+                        type="button"
+                        className={`toggle-btn ${coverPhotoMode === 'browse' ? 'active' : ''}`}
+                        onClick={() => {
+                          setCoverPhotoMode('browse');
+                          handleRemoveCoverPhoto();
+                        }}
+                      >
+                        📚 Browse Library
+                      </button>
+                    </div>
+
+                    {coverPhotoMode === 'upload' ? (
+                      !coverPhotoPreview ? (
+                        <input
+                          type="file"
+                          className="form-input-file"
+                          accept="image/*"
+                          onChange={handleCoverPhotoChange}
                         />
-                        <div className="preview-overlay">
-                          <p className="preview-filename">{collectionForm.coverPhoto?.name}</p>
-                          <button
-                            type="button"
-                            className="btn-remove-photo"
-                            onClick={handleRemoveCoverPhoto}
-                          >
-                            ✕ Remove
-                          </button>
+                      ) : (
+                        <div className="cover-photo-preview">
+                          <img 
+                            src={coverPhotoPreview} 
+                            alt="Cover preview" 
+                            className="preview-image"
+                          />
+                          <div className="preview-overlay">
+                            <p className="preview-filename">{collectionForm.coverPhoto?.name}</p>
+                            <button
+                              type="button"
+                              className="btn-remove-photo"
+                              onClick={handleRemoveCoverPhoto}
+                            >
+                              ✕ Remove
+                            </button>
+                          </div>
                         </div>
+                      )
+                    ) : (
+                      <div className="library-browser-container">
+                        <ImageBrowser
+                          onSelect={(filename) => {
+                            setSelectedLibraryImage(filename);
+                            setCoverPhotoPreview(`/api/images/${filename}`);
+                          }}
+                          selectedFilename={selectedLibraryImage || undefined}
+                        />
                       </div>
                     )}
                   </div>
@@ -1688,30 +1822,66 @@ export const Admin = () => {
                         <label className="form-label">Image</label>
                         <p className="form-help">Optional - upload new to replace existing</p>
                         
-                        {!itemImagePreview ? (
-                          <input
-                            type="file"
-                            className="form-input-file"
-                            accept="image/*"
-                            onChange={handleItemImageChange}
-                          />
-                        ) : (
-                          <div className="cover-photo-preview">
-                            <img 
-                              src={itemImagePreview} 
-                              alt="Item preview" 
-                              className="preview-image"
+                        {/* Toggle between Upload and Browse */}
+                        <div className="upload-mode-toggle">
+                          <button
+                            type="button"
+                            className={`toggle-btn ${itemImageMode === 'upload' ? 'active' : ''}`}
+                            onClick={() => {
+                              setItemImageMode('upload');
+                              setSelectedItemLibraryImage(null);
+                            }}
+                          >
+                            📤 Upload New
+                          </button>
+                          <button
+                            type="button"
+                            className={`toggle-btn ${itemImageMode === 'browse' ? 'active' : ''}`}
+                            onClick={() => {
+                              setItemImageMode('browse');
+                              handleRemoveItemImage();
+                            }}
+                          >
+                            📚 Browse Library
+                          </button>
+                        </div>
+                        
+                        {itemImageMode === 'upload' ? (
+                          !itemImagePreview ? (
+                            <input
+                              type="file"
+                              className="form-input-file"
+                              accept="image/*"
+                              onChange={handleItemImageChange}
                             />
-                            <div className="preview-overlay">
-                              <p className="preview-filename">{itemForm.file?.name}</p>
-                              <button
-                                type="button"
-                                className="btn-remove-photo"
-                                onClick={handleRemoveItemImage}
-                              >
-                                ✕ Remove
-                              </button>
+                          ) : (
+                            <div className="cover-photo-preview">
+                              <img 
+                                src={itemImagePreview} 
+                                alt="Item preview" 
+                                className="preview-image"
+                              />
+                              <div className="preview-overlay">
+                                <p className="preview-filename">{itemForm.file?.name}</p>
+                                <button
+                                  type="button"
+                                  className="btn-remove-photo"
+                                  onClick={handleRemoveItemImage}
+                                >
+                                  ✕ Remove
+                                </button>
+                              </div>
                             </div>
+                          )
+                        ) : (
+                          <div className="library-browser-container">
+                            <ImageBrowser
+                              onSelect={(filename) => {
+                                setSelectedItemLibraryImage(filename);
+                                setItemImagePreview(`/api/images/${filename}`);
+                              }}
+                              selectedFilename={selectedItemLibraryImage || undefined}
+                            />
                           </div>
                         )}
                       </div>

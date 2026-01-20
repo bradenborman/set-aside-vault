@@ -247,7 +247,7 @@ This implementation plan tracks the development of the Set-Aside-Vault personal 
 
 ## Phase 5: Media Library Feature
 
-- [-] 47. Implement Media Library with Bulk Upload and Browse
+- [x] 47. Implement Media Library with Bulk Upload and Browse
   - [x] 47.1 Backend: Bulk Upload Endpoint
     - [x] 47.1.1 Create POST /api/media/bulk endpoint to accept multiple files
     - [x] 47.1.2 Store uploaded files in volume with unique filenames
@@ -262,33 +262,33 @@ This implementation plan tracks the development of the Set-Aside-Vault personal 
     - [x] 47.3.2 Create bulk upload component with drag-and-drop support
     - [x] 47.3.3 Show upload progress for multiple files
     - [x] 47.3.4 Display success/error messages for each file
-  - [ ] 47.4 Frontend: Image Browser Component
-    - [ ] 47.4.1 Create reusable ImageBrowser component
-    - [ ] 47.4.2 Fetch and display unused images in grid layout
-    - [ ] 47.4.3 Add image preview on hover/click
-    - [ ] 47.4.4 Add search/filter functionality
-    - [ ] 47.4.5 Implement image selection (single select)
-  - [ ] 47.5 Update Create Collection Wizard
-    - [ ] 47.5.1 Add toggle between "Upload New" and "Browse Library"
-    - [ ] 47.5.2 Integrate ImageBrowser for library selection
-    - [ ] 47.5.3 Update API call to use selected library image or new upload
-  - [ ] 47.6 Update Edit Collection Wizard
-    - [ ] 47.6.1 Add toggle between "Upload New" and "Browse Library"
-    - [ ] 47.6.2 Integrate ImageBrowser for library selection
-    - [ ] 47.6.3 Update API call to use selected library image or new upload
-  - [ ] 47.7 Update Create Item Wizard
-    - [ ] 47.7.1 Add toggle between "Upload New" and "Browse Library"
-    - [ ] 47.7.2 Integrate ImageBrowser for library selection
-    - [ ] 47.7.3 Update API call to use selected library image or new upload
-  - [ ] 47.8 Update Edit Item Wizard
-    - [ ] 47.8.1 Add toggle between "Upload New" and "Browse Library"
-    - [ ] 47.8.2 Integrate ImageBrowser for library selection
-    - [ ] 47.8.3 Update API call to use selected library image or new upload
-  - [ ] 47.9 Backend: Update Create/Update Endpoints
-    - [ ] 47.9.1 Modify collection endpoints to accept either file upload or existing filename
-    - [ ] 47.9.2 Modify item endpoints to accept either file upload or existing filename
-    - [ ] 47.9.3 Add validation to ensure selected library file exists
-  - [ ] 47.10 Media Library Cleanup
-    - [ ] 47.10.1 Add DELETE /api/media/{filename} endpoint for unused files
-    - [ ] 47.10.2 Add bulk delete functionality for multiple unused files
-    - [ ] 47.10.3 Add confirmation dialog before deletion
+  - [x] 47.4 Frontend: Image Browser Component
+    - [x] 47.4.1 Create reusable ImageBrowser component
+    - [x] 47.4.2 Fetch and display unused images in grid layout
+    - [x] 47.4.3 Add image preview on hover/click
+    - [x] 47.4.4 Add search/filter functionality
+    - [x] 47.4.5 Implement image selection (single select)
+  - [x] 47.5 Update Create Collection Wizard
+    - [x] 47.5.1 Add toggle between "Upload New" and "Browse Library"
+    - [x] 47.5.2 Integrate ImageBrowser for library selection
+    - [x] 47.5.3 Update API call to use selected library image or new upload
+  - [x] 47.6 Update Edit Collection Wizard
+    - [x] 47.6.1 Add toggle between "Upload New" and "Browse Library"
+    - [x] 47.6.2 Integrate ImageBrowser for library selection
+    - [x] 47.6.3 Update API call to use selected library image or new upload
+  - [x] 47.7 Update Create Item Wizard
+    - [x] 47.7.1 Add toggle between "Upload New" and "Browse Library"
+    - [x] 47.7.2 Integrate ImageBrowser for library selection
+    - [x] 47.7.3 Update API call to use selected library image or new upload
+  - [x] 47.8 Update Edit Item Wizard
+    - [x] 47.8.1 Add toggle between "Upload New" and "Browse Library"
+    - [x] 47.8.2 Integrate ImageBrowser for library selection
+    - [x] 47.8.3 Update API call to use selected library image or new upload
+  - [x] 47.9 Backend: Update Create/Update Endpoints
+    - [x] 47.9.1 Modify collection endpoints to accept either file upload or existing filename
+    - [x] 47.9.2 Modify item endpoints to accept either file upload or existing filename
+    - [x] 47.9.3 Add validation to ensure selected library file exists
+  - [x] 47.10 Media Library Cleanup
+    - [x] 47.10.1 Add DELETE /api/media/{filename} endpoint for unused files
+    - [x] 47.10.2 Add bulk delete functionality for multiple unused files
+    - [x] 47.10.3 Add confirmation dialog before deletion

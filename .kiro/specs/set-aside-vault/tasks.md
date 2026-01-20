@@ -200,3 +200,47 @@ This implementation plan tracks the development of the Set-Aside-Vault personal 
 8. Add virtual scrolling for large collections
 9. Add comprehensive test coverage
 10. Google Analytics 
+
+
+## Phase 4: Item Categories Feature
+
+- [ ] 46. Implement Item Categories
+  - [ ] 46.1 Update TypeScript types
+    - [ ] 46.1.1 Add optional `itemCategories?: string[]` to Collection interface
+    - [ ] 46.1.2 Add optional `category?: string` to Item interface
+  - [ ] 46.2 Update Backend Models
+    - [ ] 46.2.1 Add itemCategories field to Collection entity (JSON column)
+    - [ ] 46.2.2 Add category field to Item entity (String column)
+    - [ ] 46.2.3 Update database schema migration
+  - [ ] 46.3 Update Create Collection Wizard
+    - [ ] 46.3.1 Add "Item Categories" section to form (optional)
+    - [ ] 46.3.2 Implement add/remove category UI (similar to metadata)
+    - [ ] 46.3.3 Validate category names (non-empty, unique)
+    - [ ] 46.3.4 Update CollectionFormData to include itemCategories
+    - [ ] 46.3.5 Pass itemCategories to backend API
+  - [ ] 46.4 Update Edit Collection Wizard
+    - [ ] 46.4.1 Load existing itemCategories from collection
+    - [ ] 46.4.2 Allow adding/removing categories
+    - [ ] 46.4.3 Update backend API call with modified categories
+  - [ ] 46.5 Update Create Item Wizard
+    - [ ] 46.5.1 Check if selected collection has itemCategories
+    - [ ] 46.5.2 Show category dropdown if categories exist
+    - [ ] 46.5.3 Make category selection optional
+    - [ ] 46.5.4 Update ItemFormData to include category
+    - [ ] 46.5.5 Pass category to backend API
+  - [ ] 46.6 Update Edit Item Wizard
+    - [ ] 46.6.1 Load existing category from item
+    - [ ] 46.6.2 Show category dropdown based on collection's categories
+    - [ ] 46.6.3 Allow changing or removing category
+    - [ ] 46.6.4 Update backend API call with modified category
+  - [ ] 46.7 Update Gallery Display
+    - [ ] 46.7.1 Group items by category within collection
+    - [ ] 46.7.2 Add category section headers in gallery
+    - [ ] 46.7.3 Show uncategorized items in separate section
+    - [ ] 46.7.4 Maintain existing spotlight and metadata functionality
+  - [ ] 46.8 Backend API Updates
+    - [ ] 46.8.1 Update CollectionDTO to include itemCategories
+    - [ ] 46.8.2 Update ItemDTO to include category
+    - [ ] 46.8.3 Update CollectionService create/update methods
+    - [ ] 46.8.4 Update ItemService create/update methods
+    - [ ] 46.8.5 Update response mapping to include new fields

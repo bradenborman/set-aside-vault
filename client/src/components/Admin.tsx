@@ -3,8 +3,8 @@ import type { AspectRatio, Collection, Item } from '../types';
 import { createCollection, createItem, fetchCollections, updateCollection, fetchItemsByCollectionId, fetchItemById, updateItem, deleteCollection, deleteItem } from '../services/api';
 import './Admin.css';
 
-type ActionType = 'collections' | 'stories' | null;
-type WizardStep = 'selector' | 'actions' | 'new-collection' | 'new-item' | 'edit-collection' | 'delete-collection' | 'edit-item' | 'delete-item' | 'new-story' | 'edit-story' | 'delete-story';
+type ActionType = 'collections' | 'stories' | 'media' | null;
+type WizardStep = 'selector' | 'actions' | 'new-collection' | 'new-item' | 'edit-collection' | 'delete-collection' | 'edit-item' | 'delete-item' | 'new-story' | 'edit-story' | 'delete-story' | 'media-library';
 
 interface CollectionFormData {
   name: string;
@@ -76,6 +76,10 @@ export const Admin = () => {
   const [storyCoverPreview, setStoryCoverPreview] = useState<string | null>(null);
   const [storyMetadataKey, setStoryMetadataKey] = useState('');
   const [storyMetadataValue, setStoryMetadataValue] = useState('');
+
+  // Media library state
+  const [bulkUploadFiles, setBulkUploadFiles] = useState<File[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: 'pending' | 'uploading' | 'success' | 'error' }>({});
 
   // Fetch collections on mount
   useEffect(() => {
@@ -544,6 +548,78 @@ export const Admin = () => {
     handleBackToActions();
   };
 
+  // Media library handlers
+  const handleBulkUploadChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      setBulkUploadFiles(filesArray);
+      
+      // Initialize progress for each file
+      const progress: { [key: string]: 'pending' | 'uploading' | 'success' | 'error' } = {};
+      filesArray.forEach(file => {
+        progress[file.name] = 'pending';
+      });
+      setUploadProgress(progress);
+    }
+  };
+
+  const handleBulkUploadSubmit = async () => {
+    if (bulkUploadFiles.length === 0) {
+      alert('Please select files to upload');
+      return;
+    }
+
+    const formData = new FormData();
+    bulkUploadFiles.forEach(file => {
+      formData.append('files', file);
+    });
+
+    // Update all to uploading
+    const progress = { ...uploadProgress };
+    Object.keys(progress).forEach(key => {
+      progress[key] = 'uploading';
+    });
+    setUploadProgress(progress);
+
+    try {
+      const response = await fetch('/api/media/bulk', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const result = await response.json();
+      
+      // Update progress to success
+      Object.keys(progress).forEach(key => {
+        progress[key] = 'success';
+      });
+      setUploadProgress(progress);
+      
+      alert(`Successfully uploaded ${result.count} files!`);
+      
+      // Reset
+      setBulkUploadFiles([]);
+      setUploadProgress({});
+    } catch (error) {
+      // Update progress to error
+      Object.keys(progress).forEach(key => {
+        progress[key] = 'error';
+      });
+      setUploadProgress(progress);
+      
+      console.error('Bulk upload failed:', error);
+      alert('Failed to upload files. Please try again.');
+    }
+  };
+
+  const handleMediaLibrary = () => {
+    setCurrentStep('media-library');
+  };
+
   return (
     <div className="admin-container">
       <div className="admin-content">
@@ -562,6 +638,12 @@ export const Admin = () => {
                 onClick={() => handleSelectAction('stories')}
               >
                 <span className="selector-label">Stories</span>
+              </button>
+              <button 
+                className="selector-btn"
+                onClick={() => handleSelectAction('media')}
+              >
+                <span className="selector-label">Media Library</span>
               </button>
             </div>
           </div>
@@ -653,6 +735,67 @@ export const Admin = () => {
                       </button>
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {selectedAction === 'media' && (
+              <div className="action-content">
+                {/* Bulk Upload Section */}
+                <div className="admin-section">
+                  <h3 className="section-title">Bulk Upload</h3>
+                  <p className="section-description">Upload multiple images to your media library</p>
+                  
+                  <div className="bulk-upload-container">
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handleBulkUploadChange}
+                      className="form-input-file"
+                      id="bulk-upload-input"
+                    />
+                    <label htmlFor="bulk-upload-input" className="bulk-upload-label">
+                      📁 Choose Files
+                    </label>
+                    
+                    {bulkUploadFiles.length > 0 && (
+                      <div className="bulk-upload-preview">
+                        <h4>{bulkUploadFiles.length} file(s) selected</h4>
+                        <div className="upload-file-list">
+                          {bulkUploadFiles.map((file, index) => (
+                            <div key={index} className="upload-file-item">
+                              <span className="upload-file-name">{file.name}</span>
+                              <span className={`upload-status upload-status-${uploadProgress[file.name] || 'pending'}`}>
+                                {uploadProgress[file.name] === 'uploading' && '⏳'}
+                                {uploadProgress[file.name] === 'success' && '✓'}
+                                {uploadProgress[file.name] === 'error' && '✗'}
+                                {uploadProgress[file.name] === 'pending' && '○'}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                        <button
+                          className="btn-submit"
+                          onClick={handleBulkUploadSubmit}
+                          disabled={Object.values(uploadProgress).some(status => status === 'uploading')}
+                        >
+                          Upload All Files
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="section-divider"></div>
+
+                {/* Browse Library Section */}
+                <div className="admin-section">
+                  <h3 className="section-title">Browse Library</h3>
+                  <p className="section-description">View and manage unused images</p>
+                  <button className="create-btn" onClick={handleMediaLibrary}>
+                    📚 Open Media Library
+                  </button>
                 </div>
               </div>
             )}

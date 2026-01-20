@@ -1,5 +1,9 @@
 import type { Collection } from '../types';
 
+// API base URL - use proxy in development, direct path in production
+const API_BASE_URL = '/api';
+
+
 // Mock data for development
 const mockCollections: Collection[] = [
   {
@@ -316,3 +320,46 @@ export const uploadImages = async (files: File[]): Promise<Collection> => {
   
   return newCollection;
 };
+
+export interface CreateCollectionData {
+  name: string;
+  aspectRatio: 'square' | 'portrait' | 'landscape';
+  metadata?: Record<string, string>;
+}
+
+export const createCollection = async (
+  data: CreateCollectionData,
+  coverPhoto: File
+): Promise<Collection> => {
+  const formData = new FormData();
+  
+  // Add JSON data as a string
+  formData.append('data', JSON.stringify(data));
+  
+  // Add cover photo file
+  formData.append('coverPhoto', coverPhoto);
+  
+  const response = await fetch(`${API_BASE_URL}/collections`, {
+    method: 'POST',
+    body: formData,
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Failed to create collection' }));
+    throw new Error(error.error || 'Failed to create collection');
+  }
+  
+  const collectionResponse = await response.json();
+  
+  // Transform backend response to frontend Collection type
+  return {
+    id: collectionResponse.id,
+    name: collectionResponse.name,
+    createdAt: new Date(collectionResponse.createdAt),
+    coverPhoto: collectionResponse.coverPhoto ? `/api/images/${collectionResponse.coverPhoto}` : undefined,
+    aspectRatio: collectionResponse.aspectRatio.toLowerCase() as 'square' | 'portrait' | 'landscape',
+    metadata: collectionResponse.metadata,
+    items: [], // New collection has no items yet
+  };
+};
+

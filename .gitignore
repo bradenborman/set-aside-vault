@@ -43,6 +43,8 @@ application-local.yml
 ### Uploads Directory ###
 uploads/
 **/uploads/
+volume-uploads-local/
+**/volume-uploads-local/
 
 ### Node ###
 node_modules/

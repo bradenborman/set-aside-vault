@@ -1,0 +1,61 @@
+package com.vault.service;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vault.dto.CollectionResponse;
+import com.vault.dto.CreateCollectionRequest;
+import com.vault.entity.Collection;
+import com.vault.repository.CollectionRepository;
+import com.vault.validation.CollectionValidator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+@Service
+public class CollectionService {
+
+    @Autowired
+    private CollectionRepository collectionRepository;
+
+    @Autowired
+    private StorageService storageService;
+
+    @Autowired
+    private CollectionValidator collectionValidator;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Transactional
+    public CollectionResponse createCollection(String requestData, MultipartFile coverPhoto) {
+        try {
+            // Parse JSON request data
+            CreateCollectionRequest request = objectMapper.readValue(requestData, CreateCollectionRequest.class);
+
+            // Validate request
+            collectionValidator.validateCreateRequest(request, coverPhoto);
+
+            // Create new collection entity
+            Collection collection = new Collection();
+            collection.setName(request.getName());
+            collection.setAspectRatio(request.getAspectRatio());
+            collection.setMetadata(request.getMetadata());
+
+            // Handle cover photo upload
+            if (coverPhoto != null && !coverPhoto.isEmpty()) {
+                String filename = storageService.store(coverPhoto);
+                collection.setCoverPhoto(filename);
+            }
+
+            // Save collection to database
+            Collection savedCollection = collectionRepository.save(collection);
+
+            // Return response with item count (0 for new collection)
+            return new CollectionResponse(savedCollection, 0);
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create collection: " + e.getMessage(), e);
+        }
+    }
+}

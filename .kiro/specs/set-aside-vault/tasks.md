@@ -48,23 +48,125 @@ This implementation plan tracks the development of the Set-Aside-Vault personal 
 
 ## Remaining Tasks
 
-### Phase 2: Backend Integration (Future)
+### Phase 2: Backend Integration (In Progress)
 
-- [ ] 21. Set up Spring Boot server
-- [ ] 22. Implement DTOs
-- [ ] 23. Implement StorageService
-- [ ] 24. Implement CollectionService
-- [ ] 25. Implement ItemService
-- [ ] 26. Implement StoryService
-- [ ] 27. Implement REST Controllers
-- [ ] 28. Update frontend API service
-- [ ] 29. Implement edit wizard data loading
-- [ ] 30. Configure static resource serving
-- [ ] 31. Configure CORS
-- [ ] 32. Set up Gradle build
-- [ ] 33. Create Railway deployment config
-- [ ] 34. Add error handling
-- [ ] 35. Add testing
+#### Database & Infrastructure (Complete)
+- [x] 21. Configure MySQL database connection
+- [x] 22. Create database schema (collections, items, stories tables)
+- [x] 23. Create JPA entities (Collection, Item, Story, AspectRatio)
+- [x] 24. Configure local storage path (volume-uploads-local)
+
+#### Collection Management
+- [x] 25. Implement Create Collection
+  - [x] 25.1 Create CollectionDTO and request/response models
+  - [x] 25.2 Create CollectionService with create logic
+  - [x] 25.3 Implement cover photo upload to storage
+  - [x] 25.4 Create REST endpoint POST /api/collections
+  - [x] 25.5 Add validation (name required, aspect ratio, cover photo)
+  - [x] 25.6 Update frontend API service to call endpoint
+  - [x] 25.7 Connect Create Collection wizard to real API
+
+- [ ] 26. Implement Get Collections
+  - [ ] 26.1 Create CollectionService.findAll() method
+  - [ ] 26.2 Create REST endpoint GET /api/collections
+  - [ ] 26.3 Update frontend to fetch real collections on load
+  - [ ] 26.4 Update sidebar to display real collections
+
+- [ ] 27. Implement Get Single Collection
+  - [ ] 27.1 Create CollectionService.findById() method
+  - [ ] 27.2 Create REST endpoint GET /api/collections/{id}
+  - [ ] 27.3 Update frontend collection detail view
+
+- [ ] 28. Implement Update Collection
+  - [ ] 28.1 Create CollectionService.update() method
+  - [ ] 28.2 Handle cover photo replacement logic
+  - [ ] 28.3 Create REST endpoint PUT /api/collections/{id}
+  - [ ] 28.4 Load existing data in Edit Collection wizard
+  - [ ] 28.5 Connect Edit Collection wizard to real API
+
+- [ ] 29. Implement Delete Collection
+  - [ ] 29.1 Create CollectionService.delete() method
+  - [ ] 29.2 Handle cascade delete or orphan items logic
+  - [ ] 29.3 Delete associated cover photo from storage
+  - [ ] 29.4 Create REST endpoint DELETE /api/collections/{id}
+  - [ ] 29.5 Connect Delete Collection wizard to real API
+
+#### Item Management
+- [ ] 30. Implement Create Item
+  - [ ] 30.1 Create ItemDTO and request/response models
+  - [ ] 30.2 Create ItemService with create logic
+  - [ ] 30.3 Implement item image upload to storage
+  - [ ] 30.4 Create REST endpoint POST /api/items
+  - [ ] 30.5 Add validation (collection, title, image required)
+  - [ ] 30.6 Update frontend API service to call endpoint
+  - [ ] 30.7 Connect Create Item wizard to real API
+
+- [ ] 31. Implement Get Items
+  - [ ] 31.1 Create ItemService.findByCollectionId() method
+  - [ ] 31.2 Create REST endpoint GET /api/collections/{id}/items
+  - [ ] 31.3 Create REST endpoint GET /api/items (all items)
+  - [ ] 31.4 Update frontend Gallery to fetch real items
+
+- [ ] 32. Implement Get Single Item
+  - [ ] 32.1 Create ItemService.findById() method
+  - [ ] 32.2 Create REST endpoint GET /api/items/{id}
+  - [ ] 32.3 Update frontend item detail view
+
+- [ ] 33. Implement Update Item
+  - [ ] 33.1 Create ItemService.update() method
+  - [ ] 33.2 Handle image replacement logic
+  - [ ] 33.3 Create REST endpoint PUT /api/items/{id}
+  - [ ] 33.4 Load existing data in Edit Item wizard
+  - [ ] 33.5 Connect Edit Item wizard to real API
+
+- [ ] 34. Implement Delete Item
+  - [ ] 34.1 Create ItemService.delete() method
+  - [ ] 34.2 Delete associated image from storage
+  - [ ] 34.3 Create REST endpoint DELETE /api/items/{id}
+  - [ ] 34.4 Connect Delete Item wizard to real API
+
+#### Story Management
+- [ ] 35. Implement Create Story
+  - [ ] 35.1 Create StoryDTO and request/response models
+  - [ ] 35.2 Create StoryService with create logic
+  - [ ] 35.3 Implement cover image upload to storage (optional)
+  - [ ] 35.4 Create REST endpoint POST /api/stories
+  - [ ] 35.5 Add validation (title, content required)
+  - [ ] 35.6 Update frontend API service to call endpoint
+  - [ ] 35.7 Connect Create Story wizard to real API
+
+- [ ] 36. Implement Get Stories
+  - [ ] 36.1 Create StoryService.findAll() method
+  - [ ] 36.2 Create REST endpoint GET /api/stories
+  - [ ] 36.3 Update frontend Stories page to fetch real stories
+
+- [ ] 37. Implement Update Story
+  - [ ] 37.1 Create StoryService.update() method
+  - [ ] 37.2 Handle cover image replacement logic
+  - [ ] 37.3 Create REST endpoint PUT /api/stories/{id}
+  - [ ] 37.4 Load existing data in Edit Story wizard
+  - [ ] 37.5 Connect Edit Story wizard to real API
+
+- [ ] 38. Implement Delete Story
+  - [ ] 38.1 Create StoryService.delete() method
+  - [ ] 38.2 Delete associated cover image from storage
+  - [ ] 38.3 Create REST endpoint DELETE /api/stories/{id}
+  - [ ] 38.4 Connect Delete Story wizard to real API
+
+#### Image Serving
+- [ ] 39. Implement Image Serving Endpoint
+  - [ ] 39.1 Create StorageService for file operations
+  - [ ] 39.2 Create REST endpoint GET /api/images/{filename}
+  - [ ] 39.3 Add proper content-type headers
+  - [ ] 39.4 Handle file not found errors
+  - [ ] 39.5 Update frontend to use real image URLs
+
+#### Configuration & Deployment
+- [ ] 40. Configure CORS for frontend-backend communication
+- [ ] 41. Add global exception handling (@ControllerAdvice)
+- [ ] 42. Add request/response logging
+- [ ] 43. Test Railway deployment with real database
+- [ ] 44. Verify volume mount and file uploads on Railway
 
 ### Phase 3: Enhancements (Future)
 

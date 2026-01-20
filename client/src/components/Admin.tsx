@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { AspectRatio } from '../types';
+import { createCollection } from '../services/api';
 import './Admin.css';
 
 type ActionType = 'collections' | 'stories' | null;
@@ -268,11 +269,30 @@ export const Admin = () => {
     });
   };
 
-  const handleSubmitCollection = () => {
-    // TODO: Submit to backend
-    console.log('Creating collection:', collectionForm);
-    alert(`Collection "${collectionForm.name}" created!\n\nAspect Ratio: ${collectionForm.aspectRatio}\nCover Photo: ${collectionForm.coverPhoto?.name || 'None'}\nMetadata: ${Object.keys(collectionForm.metadata).length} fields`);
-    handleBackToActions();
+  const handleSubmitCollection = async () => {
+    try {
+      if (!collectionForm.coverPhoto) {
+        alert('Cover photo is required');
+        return;
+      }
+
+      // Call the real API
+      const newCollection = await createCollection(
+        {
+          name: collectionForm.name,
+          aspectRatio: collectionForm.aspectRatio,
+          metadata: collectionForm.metadata,
+        },
+        collectionForm.coverPhoto
+      );
+
+      console.log('Collection created:', newCollection);
+      alert(`Collection "${newCollection.name}" created successfully!`);
+      handleBackToActions();
+    } catch (error) {
+      console.error('Failed to create collection:', error);
+      alert(`Failed to create collection: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   const handleSubmitItem = () => {

@@ -138,7 +138,7 @@ export const Gallery = ({ collections, loading = false, singleCollection = false
             {collection.items.map((item) => (
               <div 
                 key={item.id}
-                ref={(el) => (cardRefs.current[item.id] = el)}
+                ref={(el) => { cardRefs.current[item.id] = el; }}
                 className={`image-card ${spotlightId === item.id ? 'spotlight' : ''} ${spotlightId && spotlightId !== item.id ? 'dimmed' : ''}`}
                 onClick={() => handleCardClick(item.id)}
               >

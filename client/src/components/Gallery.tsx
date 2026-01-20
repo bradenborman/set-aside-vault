@@ -102,20 +102,43 @@ export const Gallery = ({ collections, loading = false, singleCollection = false
     if (spotlightId === itemId) {
       setSpotlightId(null); // Deselect if clicking the same card
     } else {
-      // Scroll the card into view smoothly before spotlighting
-      if (cardElement) {
-        cardElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-          inline: 'center'
-        });
-        
-        // Delay the spotlight effect to let scroll complete
+      // If there's already a spotlight, clear it first
+      if (spotlightId) {
+        setSpotlightId(null);
+        // Wait a moment before spotlighting the new card
         setTimeout(() => {
-          setSpotlightId(itemId);
-        }, 300);
+          // Scroll the card into view smoothly before spotlighting
+          if (cardElement) {
+            cardElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'center'
+            });
+            
+            // Delay the spotlight effect to let scroll complete
+            setTimeout(() => {
+              setSpotlightId(itemId);
+            }, 300);
+          } else {
+            setSpotlightId(itemId);
+          }
+        }, 100);
       } else {
-        setSpotlightId(itemId);
+        // No existing spotlight, proceed normally
+        if (cardElement) {
+          cardElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'center'
+          });
+          
+          // Delay the spotlight effect to let scroll complete
+          setTimeout(() => {
+            setSpotlightId(itemId);
+          }, 300);
+        } else {
+          setSpotlightId(itemId);
+        }
       }
     }
   };
@@ -144,11 +167,11 @@ export const Gallery = ({ collections, loading = false, singleCollection = false
               >
                 <img
                   src={item.url}
-                  alt={item.filename}
+                  alt={item.title}
                   className="image"
                   loading="lazy"
                 />
-                <p className="image-filename">{item.filename}</p>
+                <p className="image-filename">{item.title}</p>
               </div>
             ))}
           </div>
@@ -156,79 +179,41 @@ export const Gallery = ({ collections, loading = false, singleCollection = false
       ))}
 
       {/* Metadata panel for spotlighted item */}
-      {spotlightedItem && cardPosition && (
-        <div 
-          className={`metadata-card metadata-card-${panelPosition}`}
-          style={{
-            position: 'fixed',
-            top: cardPosition.top + 'px',
-            left: panelPosition === 'right' 
-              ? (cardPosition.left + cardPosition.width + 16) + 'px'
-              : (cardPosition.left - cardPosition.width - 16) + 'px',
-            width: cardPosition.width + 'px',
-            height: cardPosition.height + 'px',
-          }}
-        >
-          <button 
-            className={`metadata-close metadata-close-${panelPosition}`}
-            onClick={() => setSpotlightId(null)}
-            aria-label="Close"
+      {spotlightedItem && cardPosition && (() => {
+        return (
+          <div 
+            className={`metadata-card metadata-card-${panelPosition}`}
+            style={{
+              position: 'fixed',
+              top: cardPosition.top + 'px',
+              left: panelPosition === 'right' 
+                ? (cardPosition.left + cardPosition.width + 16) + 'px'
+                : (cardPosition.left - cardPosition.width - 16) + 'px',
+              width: cardPosition.width + 'px',
+              height: cardPosition.height + 'px',
+            }}
           >
-            {panelPosition === 'right' ? '«' : '»'}
-          </button>
-          <div className="metadata-content">
-            <h4 className="metadata-title">{spotlightedItem.filename}</h4>
-            
-            {spotlightedItem.description && (
-              <div className="metadata-field">
-                <span className="metadata-label">Description</span>
-                <p className="metadata-value">{spotlightedItem.description}</p>
-              </div>
-            )}
-
-            {spotlightedItem.condition && (
-              <div className="metadata-field">
-                <span className="metadata-label">Condition</span>
-                <p className="metadata-value">{spotlightedItem.condition}</p>
-              </div>
-            )}
-
-            {spotlightedItem.price !== undefined && (
-              <div className="metadata-field">
-                <span className="metadata-label">Price</span>
-                <p className="metadata-value">${spotlightedItem.price.toFixed(2)}</p>
-              </div>
-            )}
-
-            {spotlightedItem.acquisitionDate && (
-              <div className="metadata-field">
-                <span className="metadata-label">Acquired</span>
-                <p className="metadata-value">
-                  {new Date(spotlightedItem.acquisitionDate).toLocaleDateString()}
-                </p>
-              </div>
-            )}
-
-            {spotlightedItem.tags && spotlightedItem.tags.length > 0 && (
-              <div className="metadata-field">
-                <span className="metadata-label">Tags</span>
-                <div className="metadata-tags">
-                  {spotlightedItem.tags.map((tag, index) => (
-                    <span key={index} className="metadata-tag">{tag}</span>
-                  ))}
+            <button 
+              className={`metadata-close metadata-close-${panelPosition}`}
+              onClick={() => setSpotlightId(null)}
+              aria-label="Close"
+            >
+              {panelPosition === 'right' ? '«' : '»'}
+            </button>
+            <div className="metadata-content">
+              <h4 className="metadata-title">{spotlightedItem.title}</h4>
+              
+              {/* Dynamic metadata fields only */}
+              {spotlightedItem.metadata && Object.entries(spotlightedItem.metadata).map(([key, value]) => (
+                <div key={key} className="metadata-field">
+                  <span className="metadata-label">{key}</span>
+                  <p className="metadata-value">{value}</p>
                 </div>
-              </div>
-            )}
-
-            <div className="metadata-field">
-              <span className="metadata-label">Uploaded</span>
-              <p className="metadata-value">
-                {new Date(spotlightedItem.uploadedAt).toLocaleDateString()}
-              </p>
+              ))}
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 };

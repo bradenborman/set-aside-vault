@@ -265,10 +265,7 @@
   z-index: 99;
   overflow-y: auto;
   overflow-x: hidden;
-  transition: top 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-              left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-              width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-              height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Removed transitions - card now snaps to position instantly */
 }
 
 .metadata-card-right {

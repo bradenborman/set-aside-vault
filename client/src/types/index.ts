@@ -3,27 +3,29 @@
 export type AspectRatio = 'square' | 'portrait' | 'landscape';
 
 export interface Item {
+  // Core fields
   id: string; //will be a UUID
   collectionId?: string; // will link to Collection 
   url: string;
-  filename: string;
+  title: string; // Display title for the item
+  filename: string; // Original filename
   uploadedAt: Date;
-  description?: string; // Optional description/notes about the item
-  tags?: string[]; // Optional tags for categorization
-  price?: number; // Optional purchase price
-  condition?: string; // Optional condition (e.g., "Mint", "Near Mint", "Good", "Fair")
-  acquisitionDate?: Date; // Optional date when item was acquired
+  
+  // Flexible metadata for displayable fields (description, price, condition, etc.)
+  metadata?: Record<string, string>;
 }
 
 export interface Collection {
+  // Core fields
   id: string; //will be a UUID
   name: string;
-  description?: string; // Optional description of the collection
   items: Item[];
   createdAt: Date;
   coverPhoto?: string; // URL of the cover photo for the collection
   aspectRatio: AspectRatio; // Display aspect ratio for items in this collection
-  tags?: string[]; // Optional tags for categorization
+  
+  // Flexible metadata for displayable fields (description, tags, etc.)
+  metadata?: Record<string, string>;
 }
 export interface Story {
   id: string; //will be a UUID

@@ -14,6 +14,7 @@ public class CollectionResponse {
     private String coverPhoto;
     private AspectRatio aspectRatio;
     private Map<String, String> metadata;
+    private java.util.List<String> itemCategories;
     private int itemCount;
 
     public CollectionResponse() {
@@ -26,6 +27,7 @@ public class CollectionResponse {
         this.coverPhoto = collection.getCoverPhoto();
         this.aspectRatio = collection.getAspectRatio();
         this.metadata = collection.getMetadata();
+        this.itemCategories = collection.getItemCategories();
         this.itemCount = itemCount;
     }
 
@@ -84,5 +86,13 @@ public class CollectionResponse {
 
     public void setItemCount(int itemCount) {
         this.itemCount = itemCount;
+    }
+
+    public java.util.List<String> getItemCategories() {
+        return itemCategories;
+    }
+
+    public void setItemCategories(java.util.List<String> itemCategories) {
+        this.itemCategories = itemCategories;
     }
 }

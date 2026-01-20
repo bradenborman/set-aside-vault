@@ -12,6 +12,8 @@ public class UpdateCollectionRequest {
 
     private Map<String, String> metadata;
 
+    private java.util.List<String> itemCategories;
+
     // Getters and Setters
     public String getName() {
         return name;
@@ -35,5 +37,13 @@ public class UpdateCollectionRequest {
 
     public void setMetadata(Map<String, String> metadata) {
         this.metadata = metadata;
+    }
+
+    public java.util.List<String> getItemCategories() {
+        return itemCategories;
+    }
+
+    public void setItemCategories(java.util.List<String> itemCategories) {
+        this.itemCategories = itemCategories;
     }
 }

@@ -14,6 +14,7 @@ public class ItemResponse {
     private String filename;
     private LocalDateTime uploadedAt;
     private Map<String, String> metadata;
+    private String category;
 
     public ItemResponse() {
     }
@@ -26,6 +27,7 @@ public class ItemResponse {
         this.filename = item.getFilename();
         this.uploadedAt = item.getUploadedAt();
         this.metadata = item.getMetadata();
+        this.category = item.getCategory();
     }
 
     // Getters and Setters
@@ -83,5 +85,13 @@ public class ItemResponse {
 
     public void setMetadata(Map<String, String> metadata) {
         this.metadata = metadata;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 }

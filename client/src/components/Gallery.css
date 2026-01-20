@@ -129,6 +129,19 @@
   font-size: 1.5rem;
 }
 
+.category-section {
+  margin-bottom: 2rem;
+}
+
+.category-header {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 0 0 1rem 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
 .images-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));

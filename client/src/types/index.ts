@@ -10,6 +10,7 @@ export interface Item {
   title: string; // Display title for the item
   filename: string; // Original filename
   uploadedAt: Date;
+  category?: string; // Optional category for organizing within collection
   
   // Flexible metadata for displayable fields (description, price, condition, etc.)
   metadata?: Record<string, string>;
@@ -24,6 +25,7 @@ export interface Collection {
   coverPhoto?: string; // URL of the cover photo for the collection
   aspectRatio: AspectRatio; // Display aspect ratio for items in this collection
   itemCount?: number; // Item count from backend (when items array is not populated)
+  itemCategories?: string[]; // Optional categories for organizing items within this collection
   
   // Flexible metadata for displayable fields (description, tags, etc.)
   metadata?: Record<string, string>;

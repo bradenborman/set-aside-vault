@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS collections (
     cover_photo VARCHAR(255),
     aspect_ratio VARCHAR(20) NOT NULL,
     metadata JSON,
+    item_categories JSON COMMENT 'Optional array of category names for items in this collection',
     INDEX idx_created_at (created_at),
     INDEX idx_name (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -22,9 +23,11 @@ CREATE TABLE IF NOT EXISTS items (
     filename VARCHAR(255) NOT NULL,
     uploaded_at DATETIME NOT NULL,
     metadata JSON,
+    category VARCHAR(100) COMMENT 'Optional category assignment for this item',
     INDEX idx_collection_id (collection_id),
     INDEX idx_uploaded_at (uploaded_at),
     INDEX idx_title (title),
+    INDEX idx_category (category),
     FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

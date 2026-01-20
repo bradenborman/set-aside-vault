@@ -48,6 +48,7 @@ public class CollectionService {
             collection.setName(request.getName());
             collection.setAspectRatio(request.getAspectRatio());
             collection.setMetadata(request.getMetadata());
+            collection.setItemCategories(request.getItemCategories());
 
             // Handle cover photo upload
             if (coverPhoto != null && !coverPhoto.isEmpty()) {
@@ -108,6 +109,7 @@ public class CollectionService {
             collection.setName(request.getName());
             collection.setAspectRatio(request.getAspectRatio());
             collection.setMetadata(request.getMetadata());
+            collection.setItemCategories(request.getItemCategories());
 
             // Handle cover photo replacement if new photo provided
             if (coverPhoto != null && !coverPhoto.isEmpty()) {

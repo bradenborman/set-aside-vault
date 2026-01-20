@@ -52,6 +52,7 @@ public class ItemService {
             item.setCollectionId(request.getCollectionId());
             item.setTitle(request.getTitle());
             item.setMetadata(request.getMetadata());
+            item.setCategory(request.getCategory());
 
             // Handle image upload
             if (image != null && !image.isEmpty()) {
@@ -121,6 +122,7 @@ public class ItemService {
             item.setCollectionId(request.getCollectionId());
             item.setTitle(request.getTitle());
             item.setMetadata(request.getMetadata());
+            item.setCategory(request.getCategory());
 
             // Handle image replacement if new image provided
             if (image != null && !image.isEmpty()) {

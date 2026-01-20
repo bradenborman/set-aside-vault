@@ -171,35 +171,120 @@ export const Gallery = ({ collections, loading = false, singleCollection = false
 
   return (
     <div className={`gallery ${spotlightId ? 'has-spotlight-active' : ''}`}>
-      {displayCollections.map((collection) => (
-        <div key={collection.id} className="collection">
-          {!singleCollection && (
-            <div className="collection-header">
-              <h3 className="collection-name">{collection.name}</h3>
-            </div>
-          )}
-          <div className={`images-grid images-grid-${collection.aspectRatio} ${spotlightId ? 'has-spotlight' : ''}`}>
-            {collection.items.map((item) => (
-              <div 
-                key={item.id}
-                ref={(el) => { cardRefs.current[item.id] = el; }}
-                className={`image-card ${spotlightId === item.id ? 'spotlight' : ''} ${spotlightId && spotlightId !== item.id ? 'dimmed' : ''}`}
-                onClick={() => handleCardClick(item.id)}
-              >
-                <img
-                  src={item.url}
-                  alt={item.title}
-                  className="image"
-                  loading="lazy"
-                  decoding="async"
-                  fetchPriority={spotlightId === item.id ? 'high' : 'auto'}
-                />
-                <p className="image-filename">{item.title}</p>
+      {displayCollections.map((collection) => {
+        // Group items by category
+        const categorizedItems: { [category: string]: typeof collection.items } = {};
+        const uncategorizedItems: typeof collection.items = [];
+        
+        collection.items.forEach(item => {
+          if (item.category) {
+            if (!categorizedItems[item.category]) {
+              categorizedItems[item.category] = [];
+            }
+            categorizedItems[item.category].push(item);
+          } else {
+            uncategorizedItems.push(item);
+          }
+        });
+
+        // Get the list of categories from the collection definition (to maintain order)
+        const orderedCategories = collection.itemCategories || [];
+        
+        return (
+          <div key={collection.id} className="collection">
+            {!singleCollection && (
+              <div className="collection-header">
+                <h3 className="collection-name">{collection.name}</h3>
               </div>
-            ))}
+            )}
+            
+            {/* Render items grouped by category */}
+            {orderedCategories.length > 0 ? (
+              <>
+                {orderedCategories.map(category => {
+                  const items = categorizedItems[category] || [];
+                  if (items.length === 0) return null;
+                  
+                  return (
+                    <div key={category} className="category-section">
+                      <h4 className="category-header">{category}</h4>
+                      <div className={`images-grid images-grid-${collection.aspectRatio} ${spotlightId ? 'has-spotlight' : ''}`}>
+                        {items.map((item) => (
+                          <div 
+                            key={item.id}
+                            ref={(el) => { cardRefs.current[item.id] = el; }}
+                            className={`image-card ${spotlightId === item.id ? 'spotlight' : ''} ${spotlightId && spotlightId !== item.id ? 'dimmed' : ''}`}
+                            onClick={() => handleCardClick(item.id)}
+                          >
+                            <img
+                              src={item.url}
+                              alt={item.title}
+                              className="image"
+                              loading="lazy"
+                              decoding="async"
+                              fetchPriority={spotlightId === item.id ? 'high' : 'auto'}
+                            />
+                            <p className="image-filename">{item.title}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+                
+                {/* Uncategorized items section */}
+                {uncategorizedItems.length > 0 && (
+                  <div className="category-section">
+                    <h4 className="category-header">Uncategorized</h4>
+                    <div className={`images-grid images-grid-${collection.aspectRatio} ${spotlightId ? 'has-spotlight' : ''}`}>
+                      {uncategorizedItems.map((item) => (
+                        <div 
+                          key={item.id}
+                          ref={(el) => { cardRefs.current[item.id] = el; }}
+                          className={`image-card ${spotlightId === item.id ? 'spotlight' : ''} ${spotlightId && spotlightId !== item.id ? 'dimmed' : ''}`}
+                          onClick={() => handleCardClick(item.id)}
+                        >
+                          <img
+                            src={item.url}
+                            alt={item.title}
+                            className="image"
+                            loading="lazy"
+                            decoding="async"
+                            fetchPriority={spotlightId === item.id ? 'high' : 'auto'}
+                          />
+                          <p className="image-filename">{item.title}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              /* No categories defined - render all items in one grid */
+              <div className={`images-grid images-grid-${collection.aspectRatio} ${spotlightId ? 'has-spotlight' : ''}`}>
+                {collection.items.map((item) => (
+                  <div 
+                    key={item.id}
+                    ref={(el) => { cardRefs.current[item.id] = el; }}
+                    className={`image-card ${spotlightId === item.id ? 'spotlight' : ''} ${spotlightId && spotlightId !== item.id ? 'dimmed' : ''}`}
+                    onClick={() => handleCardClick(item.id)}
+                  >
+                    <img
+                      src={item.url}
+                      alt={item.title}
+                      className="image"
+                      loading="lazy"
+                      decoding="async"
+                      fetchPriority={spotlightId === item.id ? 'high' : 'auto'}
+                    />
+                    <p className="image-filename">{item.title}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       {/* Metadata panel for spotlighted item */}
       {spotlightedItem && cardPosition && (() => {

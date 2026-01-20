@@ -11,6 +11,7 @@ interface CollectionFormData {
   aspectRatio: AspectRatio;
   coverPhoto: File | null;
   metadata: Record<string, string>;
+  itemCategories?: string[];
 }
 
 interface ItemFormData {
@@ -18,6 +19,7 @@ interface ItemFormData {
   title: string;
   file: File | null;
   metadata: Record<string, string>;
+  category?: string;
 }
 
 interface StoryFormData {
@@ -39,10 +41,12 @@ export const Admin = () => {
     aspectRatio: 'square',
     coverPhoto: null,
     metadata: {},
+    itemCategories: [],
   });
   const [coverPhotoPreview, setCoverPhotoPreview] = useState<string | null>(null);
   const [newMetadataKey, setNewMetadataKey] = useState('');
   const [newMetadataValue, setNewMetadataValue] = useState('');
+  const [newCategoryName, setNewCategoryName] = useState('');
   
   const [itemForm, setItemForm] = useState<ItemFormData>({
     collectionId: '',
@@ -108,10 +112,12 @@ export const Admin = () => {
       aspectRatio: 'square',
       coverPhoto: null,
       metadata: {},
+      itemCategories: [],
     });
     setCoverPhotoPreview(null);
     setNewMetadataKey('');
     setNewMetadataValue('');
+    setNewCategoryName('');
     
     // Reset item form
     setItemForm({
@@ -167,6 +173,30 @@ export const Admin = () => {
     setCollectionForm({
       ...collectionForm,
       metadata: newMetadata,
+    });
+  };
+
+  const handleAddCategory = () => {
+    if (newCategoryName.trim()) {
+      const currentCategories = collectionForm.itemCategories || [];
+      // Check for duplicates
+      if (!currentCategories.includes(newCategoryName.trim())) {
+        setCollectionForm({
+          ...collectionForm,
+          itemCategories: [...currentCategories, newCategoryName.trim()],
+        });
+        setNewCategoryName('');
+      } else {
+        alert('Category already exists');
+      }
+    }
+  };
+
+  const handleRemoveCategory = (category: string) => {
+    const currentCategories = collectionForm.itemCategories || [];
+    setCollectionForm({
+      ...collectionForm,
+      itemCategories: currentCategories.filter(c => c !== category),
     });
   };
 
@@ -303,6 +333,7 @@ export const Admin = () => {
           name: collectionForm.name,
           aspectRatio: collectionForm.aspectRatio,
           metadata: collectionForm.metadata,
+          itemCategories: collectionForm.itemCategories,
         },
         collectionForm.coverPhoto
       );
@@ -333,6 +364,7 @@ export const Admin = () => {
           collectionId: itemForm.collectionId,
           title: itemForm.title,
           metadata: itemForm.metadata,
+          category: itemForm.category,
         },
         itemForm.file
       );
@@ -430,6 +462,7 @@ export const Admin = () => {
           name: collectionForm.name,
           aspectRatio: collectionForm.aspectRatio,
           metadata: collectionForm.metadata,
+          itemCategories: collectionForm.itemCategories,
         },
         collectionForm.coverPhoto || undefined
       );
@@ -461,6 +494,7 @@ export const Admin = () => {
           collectionId: itemForm.collectionId,
           title: itemForm.title,
           metadata: itemForm.metadata,
+          category: itemForm.category,
         },
         itemForm.file || undefined
       );
@@ -774,6 +808,51 @@ export const Admin = () => {
                 </div>
               </div>
 
+              {/* Item Categories */}
+              <div className="form-group">
+                <label className="form-label">Item Categories (Optional)</label>
+                <p className="form-help">Define categories to organize items within this collection</p>
+                
+                {/* Existing categories */}
+                {(collectionForm.itemCategories && collectionForm.itemCategories.length > 0) && (
+                  <div className="metadata-list">
+                    {collectionForm.itemCategories.map((category, index) => (
+                      <div key={index} className="metadata-item">
+                        <div className="metadata-item-content">
+                          <span className="metadata-item-value">{category}</span>
+                        </div>
+                        <button
+                          type="button"
+                          className="metadata-item-remove"
+                          onClick={() => handleRemoveCategory(category)}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add new category */}
+                <div className="metadata-add">
+                  <input
+                    type="text"
+                    className="form-input form-input-inline"
+                    placeholder="Category name (e.g., Rare, Common, Vintage)"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="btn-add-metadata"
+                    onClick={handleAddCategory}
+                    disabled={!newCategoryName.trim()}
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+
               {/* Submit */}
               <div className="form-actions">
                 <button
@@ -843,6 +922,29 @@ export const Admin = () => {
                   required
                 />
               </div>
+
+              {/* Category (if collection has categories) */}
+              {itemForm.collectionId && (() => {
+                const selectedCollection = collections.find(c => c.id === itemForm.collectionId);
+                return selectedCollection?.itemCategories && selectedCollection.itemCategories.length > 0 ? (
+                  <div className="form-group">
+                    <label className="form-label">Category (Optional)</label>
+                    <p className="form-help">Assign this item to a category</p>
+                    <select
+                      className="form-input"
+                      value={itemForm.category || ''}
+                      onChange={(e) => setItemForm({ ...itemForm, category: e.target.value || undefined })}
+                    >
+                      <option value="">-- No category --</option>
+                      {selectedCollection.itemCategories.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : null;
+              })()}
 
               {/* Item Image */}
               <div className="form-group">
@@ -989,6 +1091,7 @@ export const Admin = () => {
                           aspectRatio: selectedCollection.aspectRatio,
                           coverPhoto: null, // Don't pre-load the file, user can upload new one
                           metadata: selectedCollection.metadata || {},
+                          itemCategories: selectedCollection.itemCategories || [],
                         });
                         // Show existing cover photo as preview if available
                         if (selectedCollection.coverPhoto) {
@@ -1002,6 +1105,7 @@ export const Admin = () => {
                         aspectRatio: 'square',
                         coverPhoto: null,
                         metadata: {},
+                        itemCategories: [],
                       });
                       setCoverPhotoPreview(null);
                     }
@@ -1149,6 +1253,49 @@ export const Admin = () => {
                         className="btn-add-metadata"
                         onClick={handleAddMetadata}
                         disabled={!newMetadataKey.trim() || !newMetadataValue.trim()}
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Item Categories */}
+                  <div className="form-group">
+                    <label className="form-label">Item Categories (Optional)</label>
+                    <p className="form-help">Define categories to organize items within this collection</p>
+                    
+                    {(collectionForm.itemCategories && collectionForm.itemCategories.length > 0) && (
+                      <div className="metadata-list">
+                        {collectionForm.itemCategories.map((category, index) => (
+                          <div key={index} className="metadata-item">
+                            <div className="metadata-item-content">
+                              <span className="metadata-item-value">{category}</span>
+                            </div>
+                            <button
+                              type="button"
+                              className="metadata-item-remove"
+                              onClick={() => handleRemoveCategory(category)}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="metadata-add">
+                      <input
+                        type="text"
+                        className="form-input form-input-inline"
+                        placeholder="Category name (e.g., Rare, Common, Vintage)"
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        className="btn-add-metadata"
+                        onClick={handleAddCategory}
+                        disabled={!newCategoryName.trim()}
                       >
                         Add
                       </button>
@@ -1318,6 +1465,7 @@ export const Admin = () => {
                               title: item.title,
                               file: null, // Don't pre-load the file, user can upload new one
                               metadata: item.metadata || {},
+                              category: item.category,
                             });
                             // Show existing image as preview if available
                             if (item.url) {
@@ -1334,6 +1482,7 @@ export const Admin = () => {
                             title: '',
                             file: null,
                             metadata: {},
+                            category: undefined,
                           });
                           setItemImagePreview(null);
                         }
@@ -1367,6 +1516,29 @@ export const Admin = () => {
                           required
                         />
                       </div>
+
+                      {/* Category (if collection has categories) */}
+                      {(() => {
+                        const selectedCollection = collections.find(c => c.id === itemForm.collectionId);
+                        return selectedCollection?.itemCategories && selectedCollection.itemCategories.length > 0 ? (
+                          <div className="form-group">
+                            <label className="form-label">Category (Optional)</label>
+                            <p className="form-help">Assign this item to a category</p>
+                            <select
+                              className="form-input"
+                              value={itemForm.category || ''}
+                              onChange={(e) => setItemForm({ ...itemForm, category: e.target.value || undefined })}
+                            >
+                              <option value="">-- No category --</option>
+                              {selectedCollection.itemCategories.map((category) => (
+                                <option key={category} value={category}>
+                                  {category}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        ) : null;
+                      })()}
 
                       {/* Item Image */}
                       <div className="form-group">

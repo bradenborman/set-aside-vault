@@ -36,6 +36,10 @@ public class Collection {
     @Column(name = "metadata", columnDefinition = "JSON")
     private Map<String, String> metadata;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "item_categories", columnDefinition = "JSON")
+    private java.util.List<String> itemCategories;
+
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {
@@ -93,5 +97,13 @@ public class Collection {
 
     public void setMetadata(Map<String, String> metadata) {
         this.metadata = metadata;
+    }
+
+    public java.util.List<String> getItemCategories() {
+        return itemCategories;
+    }
+
+    public void setItemCategories(java.util.List<String> itemCategories) {
+        this.itemCategories = itemCategories;
     }
 }

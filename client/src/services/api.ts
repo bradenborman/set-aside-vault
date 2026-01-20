@@ -20,6 +20,7 @@ export const fetchCollections = async (): Promise<Collection[]> => {
     coverPhoto: col.coverPhoto ? `/api/images/${col.coverPhoto}` : undefined,
     aspectRatio: col.aspectRatio.toLowerCase() as 'square' | 'portrait' | 'landscape',
     metadata: col.metadata,
+    itemCategories: col.itemCategories,
     items: [], // Items will be loaded separately when viewing a collection
     itemCount: col.itemCount, // Item count from backend
   }));
@@ -45,6 +46,7 @@ export const fetchCollectionById = async (id: string): Promise<Collection> => {
     coverPhoto: col.coverPhoto ? `/api/images/${col.coverPhoto}` : undefined,
     aspectRatio: col.aspectRatio.toLowerCase() as 'square' | 'portrait' | 'landscape',
     metadata: col.metadata,
+    itemCategories: col.itemCategories,
     items: items, // Load items from API
     itemCount: col.itemCount, // Item count from backend
   };
@@ -68,6 +70,7 @@ export const fetchItemsByCollectionId = async (collectionId: string): Promise<It
     filename: item.filename,
     uploadedAt: new Date(item.uploadedAt),
     metadata: item.metadata,
+    category: item.category,
   }));
 };
 
@@ -89,6 +92,7 @@ export const fetchAllItems = async (): Promise<Item[]> => {
     filename: item.filename,
     uploadedAt: new Date(item.uploadedAt),
     metadata: item.metadata,
+    category: item.category,
   }));
 };
 
@@ -110,6 +114,7 @@ export const fetchItemById = async (id: string): Promise<Item> => {
     filename: item.filename,
     uploadedAt: new Date(item.uploadedAt),
     metadata: item.metadata,
+    category: item.category,
   };
 };
 
@@ -140,6 +145,7 @@ export interface CreateCollectionData {
   name: string;
   aspectRatio: 'square' | 'portrait' | 'landscape';
   metadata?: Record<string, string>;
+  itemCategories?: string[];
 }
 
 export const createCollection = async (
@@ -174,6 +180,7 @@ export const createCollection = async (
     coverPhoto: collectionResponse.coverPhoto ? `/api/images/${collectionResponse.coverPhoto}` : undefined,
     aspectRatio: collectionResponse.aspectRatio.toLowerCase() as 'square' | 'portrait' | 'landscape',
     metadata: collectionResponse.metadata,
+    itemCategories: collectionResponse.itemCategories,
     items: [], // New collection has no items yet
     itemCount: collectionResponse.itemCount || 0,
   };
@@ -183,6 +190,7 @@ export interface CreateItemData {
   collectionId: string;
   title: string;
   metadata?: Record<string, string>;
+  category?: string;
 }
 
 export const createItem = async (
@@ -218,6 +226,7 @@ export const createItem = async (
     filename: itemResponse.filename,
     uploadedAt: new Date(itemResponse.uploadedAt),
     metadata: itemResponse.metadata,
+    category: itemResponse.category,
   };
 };
 
@@ -225,6 +234,7 @@ export interface UpdateCollectionData {
   name: string;
   aspectRatio: 'square' | 'portrait' | 'landscape';
   metadata?: Record<string, string>;
+  itemCategories?: string[];
 }
 
 export const updateCollection = async (
@@ -262,6 +272,7 @@ export const updateCollection = async (
     coverPhoto: collectionResponse.coverPhoto ? `/api/images/${collectionResponse.coverPhoto}` : undefined,
     aspectRatio: collectionResponse.aspectRatio.toLowerCase() as 'square' | 'portrait' | 'landscape',
     metadata: collectionResponse.metadata,
+    itemCategories: collectionResponse.itemCategories,
     items: [], // Items not included in update response
     itemCount: collectionResponse.itemCount || 0,
   };
@@ -271,6 +282,7 @@ export interface UpdateItemData {
   collectionId: string;
   title: string;
   metadata?: Record<string, string>;
+  category?: string;
 }
 
 export const updateItem = async (
@@ -309,6 +321,7 @@ export const updateItem = async (
     filename: itemResponse.filename,
     uploadedAt: new Date(itemResponse.uploadedAt),
     metadata: itemResponse.metadata,
+    category: itemResponse.category,
   };
 };
 

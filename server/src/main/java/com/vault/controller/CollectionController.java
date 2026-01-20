@@ -48,4 +48,13 @@ public class CollectionController {
         CollectionResponse response = collectionService.createCollection(requestData, coverPhoto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<CollectionResponse> updateCollection(
+            @PathVariable String id,
+            @RequestParam("data") String requestData,
+            @RequestParam(value = "coverPhoto", required = false) MultipartFile coverPhoto) {
+        CollectionResponse response = collectionService.updateCollection(id, requestData, coverPhoto);
+        return ResponseEntity.ok(response);
+    }
 }

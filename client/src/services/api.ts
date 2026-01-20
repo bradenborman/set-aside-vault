@@ -221,3 +221,93 @@ export const createItem = async (
   };
 };
 
+export interface UpdateCollectionData {
+  name: string;
+  aspectRatio: 'square' | 'portrait' | 'landscape';
+  metadata?: Record<string, string>;
+}
+
+export const updateCollection = async (
+  id: string,
+  data: UpdateCollectionData,
+  coverPhoto?: File
+): Promise<Collection> => {
+  const formData = new FormData();
+  
+  // Add JSON data as a string
+  formData.append('data', JSON.stringify(data));
+  
+  // Add cover photo file if provided
+  if (coverPhoto) {
+    formData.append('coverPhoto', coverPhoto);
+  }
+  
+  const response = await fetch(`${API_BASE_URL}/collections/${id}`, {
+    method: 'PUT',
+    body: formData,
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Failed to update collection' }));
+    throw new Error(error.error || 'Failed to update collection');
+  }
+  
+  const collectionResponse = await response.json();
+  
+  // Transform backend response to frontend Collection type
+  return {
+    id: collectionResponse.id,
+    name: collectionResponse.name,
+    createdAt: new Date(collectionResponse.createdAt),
+    coverPhoto: collectionResponse.coverPhoto ? `/api/images/${collectionResponse.coverPhoto}` : undefined,
+    aspectRatio: collectionResponse.aspectRatio.toLowerCase() as 'square' | 'portrait' | 'landscape',
+    metadata: collectionResponse.metadata,
+    items: [], // Items not included in update response
+    itemCount: collectionResponse.itemCount || 0,
+  };
+};
+
+export interface UpdateItemData {
+  collectionId: string;
+  title: string;
+  metadata?: Record<string, string>;
+}
+
+export const updateItem = async (
+  id: string,
+  data: UpdateItemData,
+  image?: File
+): Promise<Item> => {
+  const formData = new FormData();
+  
+  // Add JSON data as a string
+  formData.append('data', JSON.stringify(data));
+  
+  // Add image file if provided
+  if (image) {
+    formData.append('image', image);
+  }
+  
+  const response = await fetch(`${API_BASE_URL}/items/${id}`, {
+    method: 'PUT',
+    body: formData,
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Failed to update item' }));
+    throw new Error(error.error || 'Failed to update item');
+  }
+  
+  const itemResponse = await response.json();
+  
+  // Transform backend response to frontend Item type
+  return {
+    id: itemResponse.id,
+    collectionId: itemResponse.collectionId,
+    url: itemResponse.url,
+    title: itemResponse.title,
+    filename: itemResponse.filename,
+    uploadedAt: new Date(itemResponse.uploadedAt),
+    metadata: itemResponse.metadata,
+  };
+};

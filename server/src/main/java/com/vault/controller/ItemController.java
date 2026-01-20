@@ -37,4 +37,13 @@ public class ItemController {
         ItemResponse response = itemService.createItem(requestData, image);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ItemResponse> updateItem(
+            @PathVariable String id,
+            @RequestParam("data") String requestData,
+            @RequestParam(value = "image", required = false) MultipartFile image) {
+        ItemResponse response = itemService.updateItem(id, requestData, image);
+        return ResponseEntity.ok(response);
+    }
 }

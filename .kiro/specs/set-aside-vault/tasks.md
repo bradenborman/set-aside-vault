@@ -77,12 +77,12 @@ This implementation plan tracks the development of the Set-Aside-Vault personal 
   - [x] 27.2 Create REST endpoint GET /api/collections/{id}
   - [x] 27.3 Update frontend collection detail view
 
-- [ ] 28. Implement Update Collection
-  - [ ] 28.1 Create CollectionService.update() method
-  - [ ] 28.2 Handle cover photo replacement logic
-  - [ ] 28.3 Create REST endpoint PUT /api/collections/{id}
-  - [ ] 28.4 Load existing data in Edit Collection wizard
-  - [ ] 28.5 Connect Edit Collection wizard to real API
+- [x] 28. Implement Update Collection
+  - [x] 28.1 Create CollectionService.update() method
+  - [x] 28.2 Handle cover photo replacement logic
+  - [x] 28.3 Create REST endpoint PUT /api/collections/{id}
+  - [x] 28.4 Load existing data in Edit Collection wizard
+  - [x] 28.5 Connect Edit Collection wizard to real API
 
 - [ ] 29. Implement Delete Collection
   - [ ] 29.1 Create CollectionService.delete() method
@@ -112,12 +112,12 @@ This implementation plan tracks the development of the Set-Aside-Vault personal 
   - [x] 32.2 Create REST endpoint GET /api/items/{id}
   - [x] 32.3 Update frontend item detail view
 
-- [ ] 33. Implement Update Item
-  - [ ] 33.1 Create ItemService.update() method
-  - [ ] 33.2 Handle image replacement logic
-  - [ ] 33.3 Create REST endpoint PUT /api/items/{id}
-  - [ ] 33.4 Load existing data in Edit Item wizard
-  - [ ] 33.5 Connect Edit Item wizard to real API
+- [x] 33. Implement Update Item
+  - [x] 33.1 Create ItemService.update() method
+  - [x] 33.2 Handle image replacement logic
+  - [x] 33.3 Create REST endpoint PUT /api/items/{id}
+  - [x] 33.4 Load existing data in Edit Item wizard
+  - [x] 33.5 Connect Edit Item wizard to real API
 
 - [ ] 34. Implement Delete Item
   - [ ] 34.1 Create ItemService.delete() method

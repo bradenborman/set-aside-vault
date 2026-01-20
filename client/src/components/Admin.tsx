@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import type { AspectRatio, Collection } from '../types';
-import { createCollection, createItem, fetchCollections } from '../services/api';
+import type { AspectRatio, Collection, Item } from '../types';
+import { createCollection, createItem, fetchCollections, updateCollection, fetchItemsByCollectionId, fetchItemById, updateItem } from '../services/api';
 import './Admin.css';
 
 type ActionType = 'collections' | 'stories' | null;
@@ -53,6 +53,8 @@ export const Admin = () => {
   const [itemImagePreview, setItemImagePreview] = useState<string | null>(null);
   const [itemMetadataKey, setItemMetadataKey] = useState('');
   const [itemMetadataValue, setItemMetadataValue] = useState('');
+  const [availableItems, setAvailableItems] = useState<Item[]>([]);
+  const [loadingItems, setLoadingItems] = useState<boolean>(false);
   
   // For edit/delete operations
   const [selectedCollectionId, setSelectedCollectionId] = useState<string>('');
@@ -378,18 +380,62 @@ export const Admin = () => {
     handleBackToActions();
   };
 
-  const handleUpdateCollection = () => {
-    // TODO: Submit to backend
-    console.log('Updating collection:', selectedCollectionId, collectionForm);
-    alert(`Collection "${collectionForm.name}" updated!`);
-    handleBackToActions();
+  const handleUpdateCollection = async () => {
+    try {
+      if (!selectedCollectionId) {
+        alert('Please select a collection to update');
+        return;
+      }
+
+      // Call the real API
+      const updatedCollection = await updateCollection(
+        selectedCollectionId,
+        {
+          name: collectionForm.name,
+          aspectRatio: collectionForm.aspectRatio,
+          metadata: collectionForm.metadata,
+        },
+        collectionForm.coverPhoto || undefined
+      );
+
+      console.log('Collection updated:', updatedCollection);
+      alert(`Collection "${updatedCollection.name}" updated successfully!`);
+      
+      // Reload collections to update the list
+      await loadCollections();
+      
+      handleBackToActions();
+    } catch (error) {
+      console.error('Failed to update collection:', error);
+      alert(`Failed to update collection: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
-  const handleUpdateItem = () => {
-    // TODO: Submit to backend
-    console.log('Updating item:', selectedItemId, itemForm);
-    alert(`Item "${itemForm.title}" updated!`);
-    handleBackToActions();
+  const handleUpdateItem = async () => {
+    try {
+      if (!selectedItemId) {
+        alert('Please select an item to update');
+        return;
+      }
+
+      // Call the real API
+      const updatedItem = await updateItem(
+        selectedItemId,
+        {
+          collectionId: itemForm.collectionId,
+          title: itemForm.title,
+          metadata: itemForm.metadata,
+        },
+        itemForm.file || undefined
+      );
+
+      console.log('Item updated:', updatedItem);
+      alert(`Item "${updatedItem.title}" updated successfully!`);
+      handleBackToActions();
+    } catch (error) {
+      console.error('Failed to update item:', error);
+      alert(`Failed to update item: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   // TODO: Implement handleNewStory
@@ -894,16 +940,35 @@ export const Admin = () => {
                 <select
                   className="form-input"
                   value={selectedCollectionId}
-                  onChange={(e) => {
-                    setSelectedCollectionId(e.target.value);
-                    // TODO: Load collection data and populate form
-                    // For now, just reset the form
-                    setCollectionForm({
-                      name: '',
-                      aspectRatio: 'square',
-                      coverPhoto: null,
-                      metadata: {},
-                    });
+                  onChange={async (e) => {
+                    const collectionId = e.target.value;
+                    setSelectedCollectionId(collectionId);
+                    
+                    if (collectionId) {
+                      // Load collection data and populate form
+                      const selectedCollection = collections.find(c => c.id === collectionId);
+                      if (selectedCollection) {
+                        setCollectionForm({
+                          name: selectedCollection.name,
+                          aspectRatio: selectedCollection.aspectRatio,
+                          coverPhoto: null, // Don't pre-load the file, user can upload new one
+                          metadata: selectedCollection.metadata || {},
+                        });
+                        // Show existing cover photo as preview if available
+                        if (selectedCollection.coverPhoto) {
+                          setCoverPhotoPreview(selectedCollection.coverPhoto);
+                        }
+                      }
+                    } else {
+                      // Reset form if no collection selected
+                      setCollectionForm({
+                        name: '',
+                        aspectRatio: 'square',
+                        coverPhoto: null,
+                        metadata: {},
+                      });
+                      setCoverPhotoPreview(null);
+                    }
                   }}
                   required
                 >
@@ -1161,9 +1226,25 @@ export const Admin = () => {
                 <select
                   className="form-input"
                   value={itemForm.collectionId}
-                  onChange={(e) => {
-                    setItemForm({ ...itemForm, collectionId: e.target.value });
+                  onChange={async (e) => {
+                    const collectionId = e.target.value;
+                    setItemForm({ ...itemForm, collectionId });
                     setSelectedItemId(''); // Reset item selection when collection changes
+                    setAvailableItems([]); // Clear items
+                    
+                    // Load items for selected collection
+                    if (collectionId) {
+                      try {
+                        setLoadingItems(true);
+                        const items = await fetchItemsByCollectionId(collectionId);
+                        setAvailableItems(items);
+                      } catch (error) {
+                        console.error('Failed to load items:', error);
+                        alert('Failed to load items for this collection');
+                      } finally {
+                        setLoadingItems(false);
+                      }
+                    }
                   }}
                   required
                 >
@@ -1188,22 +1269,51 @@ export const Admin = () => {
                     <select
                       className="form-input"
                       value={selectedItemId}
-                      onChange={(e) => {
-                        setSelectedItemId(e.target.value);
-                        // TODO: Load item data and populate form
-                        setItemForm({
-                          ...itemForm,
-                          title: '',
-                          file: null,
-                          metadata: {},
-                        });
+                      onChange={async (e) => {
+                        const itemId = e.target.value;
+                        setSelectedItemId(itemId);
+                        
+                        if (itemId) {
+                          // Load item data and populate form
+                          try {
+                            const item = await fetchItemById(itemId);
+                            setItemForm({
+                              collectionId: item.collectionId || itemForm.collectionId,
+                              title: item.title,
+                              file: null, // Don't pre-load the file, user can upload new one
+                              metadata: item.metadata || {},
+                            });
+                            // Show existing image as preview if available
+                            if (item.url) {
+                              setItemImagePreview(item.url);
+                            }
+                          } catch (error) {
+                            console.error('Failed to load item:', error);
+                            alert('Failed to load item data');
+                          }
+                        } else {
+                          // Reset form if no item selected
+                          setItemForm({
+                            ...itemForm,
+                            title: '',
+                            file: null,
+                            metadata: {},
+                          });
+                          setItemImagePreview(null);
+                        }
                       }}
                       required
                     >
                       <option value="">-- Select an item to edit --</option>
-                      <option value="1-1">1950s Vintage Card</option>
-                      <option value="1-2">2020 Rookie Card</option>
-                      <option value="1-3">Baseball Collection Set</option>
+                      {loadingItems ? (
+                        <option disabled>Loading items...</option>
+                      ) : (
+                        availableItems.map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {item.title}
+                          </option>
+                        ))
+                      )}
                     </select>
                   </div>
 
@@ -1349,9 +1459,25 @@ export const Admin = () => {
                 <select
                   className="form-input"
                   value={itemForm.collectionId}
-                  onChange={(e) => {
-                    setItemForm({ ...itemForm, collectionId: e.target.value });
+                  onChange={async (e) => {
+                    const collectionId = e.target.value;
+                    setItemForm({ ...itemForm, collectionId });
                     setSelectedItemId('');
+                    setAvailableItems([]); // Clear items
+                    
+                    // Load items for selected collection
+                    if (collectionId) {
+                      try {
+                        setLoadingItems(true);
+                        const items = await fetchItemsByCollectionId(collectionId);
+                        setAvailableItems(items);
+                      } catch (error) {
+                        console.error('Failed to load items:', error);
+                        alert('Failed to load items for this collection');
+                      } finally {
+                        setLoadingItems(false);
+                      }
+                    }
                   }}
                   required
                 >
@@ -1379,9 +1505,15 @@ export const Admin = () => {
                       required
                     >
                       <option value="">-- Select an item --</option>
-                      <option value="1-1">1950s Vintage Card</option>
-                      <option value="1-2">2020 Rookie Card</option>
-                      <option value="1-3">Baseball Collection Set</option>
+                      {loadingItems ? (
+                        <option disabled>Loading items...</option>
+                      ) : (
+                        availableItems.map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {item.title}
+                          </option>
+                        ))
+                      )}
                     </select>
                   </div>
 

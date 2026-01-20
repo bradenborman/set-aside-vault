@@ -22,7 +22,7 @@ export const CollectionCarousel = ({ collections }: CollectionCarouselProps) => 
   const duplicatedCollections = [...collections, ...collections, ...collections];
 
   // Calculate stats
-  const totalItems = collections.reduce((sum, col) => sum + col.items.length, 0);
+  const totalItems = collections.reduce((sum, col) => sum + (col.itemCount ?? col.items.length), 0);
   const storiesCount = 3; // TODO: Get from actual stories data
 
   return (
@@ -61,7 +61,7 @@ export const CollectionCarousel = ({ collections }: CollectionCarouselProps) => 
                 <div className="carousel-overlay">
                   <h3 className="carousel-title">{collection.name}</h3>
                   <p className="carousel-count">
-                    {collection.items.length} {collection.items.length === 1 ? 'item' : 'items'}
+                    {collection.itemCount ?? collection.items.length} {(collection.itemCount ?? collection.items.length) === 1 ? 'item' : 'items'}
                   </p>
                 </div>
               </div>

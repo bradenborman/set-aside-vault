@@ -3,6 +3,7 @@ package com.vault.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vault.dto.CreateItemRequest;
 import com.vault.dto.ItemResponse;
+import com.vault.dto.UpdateItemRequest;
 import com.vault.entity.Item;
 import com.vault.repository.CollectionRepository;
 import com.vault.repository.ItemRepository;
@@ -94,5 +95,59 @@ public class ItemService {
         Item item = itemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Item not found with id: " + id));
         return new ItemResponse(item);
+    }
+
+    @Transactional
+    public ItemResponse updateItem(String id, String requestData, MultipartFile image) {
+        try {
+            // Parse JSON request data
+            UpdateItemRequest request = objectMapper.readValue(requestData, UpdateItemRequest.class);
+
+            // Validate request
+            itemValidator.validateUpdateRequest(request, image);
+
+            // Find existing item
+            Item item = itemRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Item not found with id: " + id));
+
+            // Verify collection exists
+            collectionRepository.findById(request.getCollectionId())
+                    .orElseThrow(() -> new IllegalArgumentException("Collection not found with id: " + request.getCollectionId()));
+
+            // Store old image filename for deletion if being replaced
+            String oldFilename = item.getFilename();
+
+            // Update item fields
+            item.setCollectionId(request.getCollectionId());
+            item.setTitle(request.getTitle());
+            item.setMetadata(request.getMetadata());
+
+            // Handle image replacement if new image provided
+            if (image != null && !image.isEmpty()) {
+                String filename = storageService.store(image);
+                item.setFilename(filename);
+                item.setUrl("/api/images/" + filename);
+
+                // Delete old image if it exists
+                if (oldFilename != null && !oldFilename.isEmpty()) {
+                    try {
+                        storageService.delete(oldFilename);
+                    } catch (Exception e) {
+                        // Log but don't fail the update if old file deletion fails
+                        System.err.println("Failed to delete old item image: " + oldFilename);
+                    }
+                }
+            }
+
+            // Save updated item
+            Item updatedItem = itemRepository.save(item);
+
+            // Return response
+            return new ItemResponse(updatedItem);
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to update item: " + e.getMessage(), e);
+        }
     }
 }

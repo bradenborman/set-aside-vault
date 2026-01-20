@@ -428,6 +428,32 @@
   color: var(--gray-400);
 }
 
+.form-input::placeholder {
+  color: var(--gray-400);
+}
+
+.form-textarea {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  color: var(--gray-900);
+  background: white;
+  transition: border-color 0.2s ease;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 120px;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.form-textarea::placeholder {
+  color: var(--gray-400);
+}
+
 .form-input-file {
   padding: 0.5rem;
   border: 2px dashed var(--border);
@@ -670,6 +696,60 @@
 }
 
 .btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Delete Warning */
+.delete-warning {
+  padding: 1.5rem;
+  background: #fef2f2;
+  border: 2px solid #fecaca;
+  border-radius: 12px;
+  margin: 1rem 0;
+}
+
+.warning-icon {
+  font-size: 2.5rem;
+  text-align: center;
+  margin: 0 0 1rem 0;
+}
+
+.warning-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #991b1b;
+  margin: 0 0 0.75rem 0;
+  text-align: center;
+}
+
+.warning-text {
+  font-size: 0.9375rem;
+  color: #7f1d1d;
+  line-height: 1.5;
+  margin: 0;
+  text-align: center;
+}
+
+.btn-delete-confirm {
+  padding: 0.875rem 2rem;
+  background: #ef4444;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-delete-confirm:hover:not(:disabled) {
+  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-delete-confirm:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }

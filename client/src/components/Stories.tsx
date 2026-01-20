@@ -43,11 +43,6 @@ export const Stories = () => {
 
   return (
     <div className="stories-container">
-      <div className="stories-header">
-        <h1 className="stories-title">Collection Stories</h1>
-        <p className="stories-subtitle">Tales and memories behind the treasures</p>
-      </div>
-
       <div className="stories-grid">
         {stories.map((story) => (
           <article key={story.id} className="story-card">

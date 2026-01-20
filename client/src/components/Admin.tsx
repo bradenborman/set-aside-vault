@@ -3,12 +3,28 @@ import type { AspectRatio } from '../types';
 import './Admin.css';
 
 type ActionType = 'collections' | 'stories' | null;
-type WizardStep = 'selector' | 'actions' | 'new-collection';
+type WizardStep = 'selector' | 'actions' | 'new-collection' | 'new-item' | 'edit-collection' | 'delete-collection' | 'edit-item' | 'delete-item' | 'new-story' | 'edit-story' | 'delete-story';
 
 interface CollectionFormData {
   name: string;
   aspectRatio: AspectRatio;
   coverPhoto: File | null;
+  metadata: Record<string, string>;
+}
+
+interface ItemFormData {
+  collectionId: string;
+  title: string;
+  file: File | null;
+  metadata: Record<string, string>;
+}
+
+interface StoryFormData {
+  title: string;
+  content: string;
+  coverImage: File | null;
+  itemId?: string;
+  collectionId?: string;
   metadata: Record<string, string>;
 }
 
@@ -24,6 +40,33 @@ export const Admin = () => {
   const [coverPhotoPreview, setCoverPhotoPreview] = useState<string | null>(null);
   const [newMetadataKey, setNewMetadataKey] = useState('');
   const [newMetadataValue, setNewMetadataValue] = useState('');
+  
+  const [itemForm, setItemForm] = useState<ItemFormData>({
+    collectionId: '',
+    title: '',
+    file: null,
+    metadata: {},
+  });
+  const [itemImagePreview, setItemImagePreview] = useState<string | null>(null);
+  const [itemMetadataKey, setItemMetadataKey] = useState('');
+  const [itemMetadataValue, setItemMetadataValue] = useState('');
+  
+  // For edit/delete operations
+  const [selectedCollectionId, setSelectedCollectionId] = useState<string>('');
+  const [selectedItemId, setSelectedItemId] = useState<string>('');
+  const [selectedStoryId, setSelectedStoryId] = useState<string>('');
+  
+  const [storyForm, setStoryForm] = useState<StoryFormData>({
+    title: '',
+    content: '',
+    coverImage: null,
+    itemId: '',
+    collectionId: '',
+    metadata: {},
+  });
+  const [storyCoverPreview, setStoryCoverPreview] = useState<string | null>(null);
+  const [storyMetadataKey, setStoryMetadataKey] = useState('');
+  const [storyMetadataValue, setStoryMetadataValue] = useState('');
 
   const handleSelectAction = (action: ActionType) => {
     setSelectedAction(action);
@@ -37,7 +80,7 @@ export const Admin = () => {
 
   const handleBackToActions = () => {
     setCurrentStep('actions');
-    // Reset form
+    // Reset collection form
     setCollectionForm({
       name: '',
       aspectRatio: 'square',
@@ -47,10 +90,39 @@ export const Admin = () => {
     setCoverPhotoPreview(null);
     setNewMetadataKey('');
     setNewMetadataValue('');
+    
+    // Reset item form
+    setItemForm({
+      collectionId: '',
+      title: '',
+      file: null,
+      metadata: {},
+    });
+    setItemImagePreview(null);
+    setItemMetadataKey('');
+    setItemMetadataValue('');
+    
+    // Reset story form
+    setStoryForm({
+      title: '',
+      content: '',
+      coverImage: null,
+      itemId: '',
+      collectionId: '',
+      metadata: {},
+    });
+    setStoryCoverPreview(null);
+    setStoryMetadataKey('');
+    setStoryMetadataValue('');
+    setSelectedStoryId('');
   };
 
   const handleNewCollection = () => {
     setCurrentStep('new-collection');
+  };
+
+  const handleNewItem = () => {
+    setCurrentStep('new-item');
   };
 
   const handleAddMetadata = () => {
@@ -72,6 +144,29 @@ export const Admin = () => {
     delete newMetadata[key];
     setCollectionForm({
       ...collectionForm,
+      metadata: newMetadata,
+    });
+  };
+
+  const handleAddItemMetadata = () => {
+    if (itemMetadataKey.trim() && itemMetadataValue.trim()) {
+      setItemForm({
+        ...itemForm,
+        metadata: {
+          ...itemForm.metadata,
+          [itemMetadataKey]: itemMetadataValue,
+        },
+      });
+      setItemMetadataKey('');
+      setItemMetadataValue('');
+    }
+  };
+
+  const handleRemoveItemMetadata = (key: string) => {
+    const newMetadata = { ...itemForm.metadata };
+    delete newMetadata[key];
+    setItemForm({
+      ...itemForm,
       metadata: newMetadata,
     });
   };
@@ -101,6 +196,78 @@ export const Admin = () => {
     }
   };
 
+  const handleItemImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setItemForm({
+        ...itemForm,
+        file: file,
+      });
+      
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setItemImagePreview(previewUrl);
+    }
+  };
+
+  const handleRemoveItemImage = () => {
+    setItemForm({
+      ...itemForm,
+      file: null,
+    });
+    if (itemImagePreview) {
+      URL.revokeObjectURL(itemImagePreview);
+      setItemImagePreview(null);
+    }
+  };
+
+  const handleStoryCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setStoryForm({
+        ...storyForm,
+        coverImage: file,
+      });
+      
+      const previewUrl = URL.createObjectURL(file);
+      setStoryCoverPreview(previewUrl);
+    }
+  };
+
+  const handleRemoveStoryCover = () => {
+    setStoryForm({
+      ...storyForm,
+      coverImage: null,
+    });
+    if (storyCoverPreview) {
+      URL.revokeObjectURL(storyCoverPreview);
+      setStoryCoverPreview(null);
+    }
+  };
+
+  const handleAddStoryMetadata = () => {
+    if (storyMetadataKey.trim() && storyMetadataValue.trim()) {
+      setStoryForm({
+        ...storyForm,
+        metadata: {
+          ...storyForm.metadata,
+          [storyMetadataKey]: storyMetadataValue,
+        },
+      });
+      setStoryMetadataKey('');
+      setStoryMetadataValue('');
+    }
+  };
+
+  const handleRemoveStoryMetadata = (key: string) => {
+    const newMetadata = { ...storyForm.metadata };
+    delete newMetadata[key];
+    setStoryForm({
+      ...storyForm,
+      metadata: newMetadata,
+    });
+  };
+
   const handleSubmitCollection = () => {
     // TODO: Submit to backend
     console.log('Creating collection:', collectionForm);
@@ -108,52 +275,95 @@ export const Admin = () => {
     handleBackToActions();
   };
 
+  const handleSubmitItem = () => {
+    // TODO: Submit to backend
+    console.log('Creating item:', itemForm);
+    alert(`Item "${itemForm.title}" created!\n\nCollection: ${itemForm.collectionId}\nImage: ${itemForm.file?.name || 'None'}\nMetadata: ${Object.keys(itemForm.metadata).length} fields`);
+    handleBackToActions();
+  };
+
   // TODO: Implement handleEditCollection
   const handleEditCollection = () => {
-    alert('Edit Collection clicked');
-    console.log('Edit Collection clicked');
+    setCurrentStep('edit-collection');
   };
 
   // TODO: Implement handleDeleteCollection
   const handleDeleteCollection = () => {
-    alert('Delete Collection clicked');
-    console.log('Delete Collection clicked');
-  };
-
-  // TODO: Implement handleNewItem
-  const handleNewItem = () => {
-    alert('New Item clicked');
-    console.log('New Item clicked');
+    setCurrentStep('delete-collection');
   };
 
   // TODO: Implement handleEditItem
   const handleEditItem = () => {
-    alert('Edit Item clicked');
-    console.log('Edit Item clicked');
+    setCurrentStep('edit-item');
   };
 
   // TODO: Implement handleRemoveItem
   const handleRemoveItem = () => {
-    alert('Remove Item clicked');
-    console.log('Remove Item clicked');
+    setCurrentStep('delete-item');
+  };
+
+  const handleConfirmDeleteCollection = () => {
+    // TODO: Submit to backend
+    console.log('Deleting collection:', selectedCollectionId);
+    alert(`Collection deleted!`);
+    handleBackToActions();
+  };
+
+  const handleConfirmDeleteItem = () => {
+    // TODO: Submit to backend
+    console.log('Deleting item:', selectedItemId);
+    alert(`Item deleted!`);
+    handleBackToActions();
+  };
+
+  const handleUpdateCollection = () => {
+    // TODO: Submit to backend
+    console.log('Updating collection:', selectedCollectionId, collectionForm);
+    alert(`Collection "${collectionForm.name}" updated!`);
+    handleBackToActions();
+  };
+
+  const handleUpdateItem = () => {
+    // TODO: Submit to backend
+    console.log('Updating item:', selectedItemId, itemForm);
+    alert(`Item "${itemForm.title}" updated!`);
+    handleBackToActions();
   };
 
   // TODO: Implement handleNewStory
   const handleNewStory = () => {
-    alert('New Story clicked');
-    console.log('New Story clicked');
+    setCurrentStep('new-story');
   };
 
   // TODO: Implement handleEditStory
   const handleEditStory = () => {
-    alert('Edit Story clicked');
-    console.log('Edit Story clicked');
+    setCurrentStep('edit-story');
   };
 
   // TODO: Implement handleDeleteStory
   const handleDeleteStory = () => {
-    alert('Delete Story clicked');
-    console.log('Delete Story clicked');
+    setCurrentStep('delete-story');
+  };
+
+  const handleSubmitStory = () => {
+    // TODO: Submit to backend
+    console.log('Creating story:', storyForm);
+    alert(`Story "${storyForm.title}" created!`);
+    handleBackToActions();
+  };
+
+  const handleUpdateStory = () => {
+    // TODO: Submit to backend
+    console.log('Updating story:', selectedStoryId, storyForm);
+    alert(`Story "${storyForm.title}" updated!`);
+    handleBackToActions();
+  };
+
+  const handleConfirmDeleteStory = () => {
+    // TODO: Submit to backend
+    console.log('Deleting story:', selectedStoryId);
+    alert(`Story deleted!`);
+    handleBackToActions();
   };
 
   return (
@@ -436,6 +646,1134 @@ export const Admin = () => {
                   disabled={!collectionForm.name.trim() || !collectionForm.coverPhoto || Object.keys(collectionForm.metadata).length === 0}
                 >
                   Create Collection
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {currentStep === 'new-item' && (
+          <div className="wizard-panel">
+            <button 
+              className="back-btn"
+              onClick={handleBackToActions}
+            >
+              ← Back
+            </button>
+
+            <h2 className="wizard-title">Create New Item</h2>
+
+            <div className="wizard-form">
+              {/* Collection Selection */}
+              <div className="form-group">
+                <label className="form-label">Collection *</label>
+                <p className="form-help">Select which collection this item belongs to</p>
+                <select
+                  className="form-input"
+                  value={itemForm.collectionId}
+                  onChange={(e) => setItemForm({ ...itemForm, collectionId: e.target.value })}
+                  required
+                >
+                  <option value="">-- Select a collection --</option>
+                  <option value="1">Baseball Cards</option>
+                  <option value="2">Baseball Auto</option>
+                  <option value="3">Farm Country</option>
+                  <option value="4">SH Figuarts</option>
+                  <option value="5">Pokemon</option>
+                </select>
+              </div>
+
+              {/* Item Title */}
+              <div className="form-group">
+                <label className="form-label">Title *</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g., 1950s Vintage Card, Signed Baseball"
+                  value={itemForm.title}
+                  onChange={(e) => setItemForm({ ...itemForm, title: e.target.value })}
+                  required
+                />
+              </div>
+
+              {/* Item Image */}
+              <div className="form-group">
+                <label className="form-label">Image *</label>
+                <p className="form-help">Required - the main image for this item</p>
+                
+                {/* TODO: Make preview match the aspect ratio of the selected collection
+                     - Look up the collection's aspectRatio from collectionId
+                     - Apply appropriate aspect-ratio CSS to preview-image
+                     - Square: 1/1, Portrait: 2/3, Landscape: 3/2 */}
+                
+                {!itemImagePreview ? (
+                  <input
+                    type="file"
+                    className="form-input-file"
+                    accept="image/*"
+                    onChange={handleItemImageChange}
+                    required
+                  />
+                ) : (
+                  <div className="cover-photo-preview">
+                    <img 
+                      src={itemImagePreview} 
+                      alt="Item preview" 
+                      className="preview-image"
+                    />
+                    <div className="preview-overlay">
+                      <p className="preview-filename">{itemForm.file?.name}</p>
+                      <button
+                        type="button"
+                        className="btn-remove-photo"
+                        onClick={handleRemoveItemImage}
+                      >
+                        ✕ Remove
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Metadata */}
+              <div className="form-group">
+                <label className="form-label">Metadata *</label>
+                <p className="form-help">Required - add at least one field (description, condition, price, etc.)</p>
+                
+                {/* Existing metadata */}
+                {Object.keys(itemForm.metadata).length > 0 && (
+                  <div className="metadata-list">
+                    {Object.entries(itemForm.metadata).map(([key, value]) => (
+                      <div key={key} className="metadata-item">
+                        <div className="metadata-item-content">
+                          <span className="metadata-item-key">{key}:</span>
+                          <span className="metadata-item-value">{value}</span>
+                        </div>
+                        <button
+                          type="button"
+                          className="metadata-item-remove"
+                          onClick={() => handleRemoveItemMetadata(key)}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add new metadata */}
+                <div className="metadata-add">
+                  <input
+                    type="text"
+                    className="form-input form-input-inline"
+                    placeholder="Field name (e.g., Description, Condition)"
+                    value={itemMetadataKey}
+                    onChange={(e) => setItemMetadataKey(e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    className="form-input form-input-inline"
+                    placeholder="Value"
+                    value={itemMetadataValue}
+                    onChange={(e) => setItemMetadataValue(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="btn-add-metadata"
+                    onClick={handleAddItemMetadata}
+                    disabled={!itemMetadataKey.trim() || !itemMetadataValue.trim()}
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+
+              {/* Submit */}
+              <div className="form-actions">
+                <button
+                  type="button"
+                  className="btn-cancel"
+                  onClick={handleBackToActions}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn-submit"
+                  onClick={handleSubmitItem}
+                  disabled={!itemForm.collectionId || !itemForm.title.trim() || !itemForm.file || Object.keys(itemForm.metadata).length === 0}
+                >
+                  Create Item
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {currentStep === 'edit-collection' && (
+          <div className="wizard-panel">
+            <button 
+              className="back-btn"
+              onClick={handleBackToActions}
+            >
+              ← Back
+            </button>
+
+            <h2 className="wizard-title">Edit Collection</h2>
+
+            <div className="wizard-form">
+              {/* Collection Selection */}
+              <div className="form-group">
+                <label className="form-label">Select Collection *</label>
+                <select
+                  className="form-input"
+                  value={selectedCollectionId}
+                  onChange={(e) => {
+                    setSelectedCollectionId(e.target.value);
+                    // TODO: Load collection data and populate form
+                    // For now, just reset the form
+                    setCollectionForm({
+                      name: '',
+                      aspectRatio: 'square',
+                      coverPhoto: null,
+                      metadata: {},
+                    });
+                  }}
+                  required
+                >
+                  <option value="">-- Select a collection to edit --</option>
+                  <option value="1">Baseball Cards</option>
+                  <option value="2">Baseball Auto</option>
+                  <option value="3">Farm Country</option>
+                  <option value="4">SH Figuarts</option>
+                  <option value="5">Pokemon</option>
+                </select>
+              </div>
+
+              {selectedCollectionId && (
+                <>
+                  {/* Collection Name */}
+                  <div className="form-group">
+                    <label className="form-label">Collection Name *</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="e.g., Baseball Cards, Pokemon Collection"
+                      value={collectionForm.name}
+                      onChange={(e) => setCollectionForm({ ...collectionForm, name: e.target.value })}
+                    />
+                  </div>
+
+                  {/* Aspect Ratio */}
+                  <div className="form-group">
+                    <label className="form-label">Aspect Ratio *</label>
+                    <div className="radio-group">
+                      <label className="radio-label">
+                        <input
+                          type="radio"
+                          name="aspectRatio"
+                          value="square"
+                          checked={collectionForm.aspectRatio === 'square'}
+                          onChange={(e) => setCollectionForm({ ...collectionForm, aspectRatio: e.target.value as AspectRatio })}
+                        />
+                        <span className="radio-text">Square (1:1)</span>
+                      </label>
+                      <label className="radio-label">
+                        <input
+                          type="radio"
+                          name="aspectRatio"
+                          value="portrait"
+                          checked={collectionForm.aspectRatio === 'portrait'}
+                          onChange={(e) => setCollectionForm({ ...collectionForm, aspectRatio: e.target.value as AspectRatio })}
+                        />
+                        <span className="radio-text">Portrait (2:3)</span>
+                      </label>
+                      <label className="radio-label">
+                        <input
+                          type="radio"
+                          name="aspectRatio"
+                          value="landscape"
+                          checked={collectionForm.aspectRatio === 'landscape'}
+                          onChange={(e) => setCollectionForm({ ...collectionForm, aspectRatio: e.target.value as AspectRatio })}
+                        />
+                        <span className="radio-text">Landscape (3:2)</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Cover Photo */}
+                  <div className="form-group">
+                    <label className="form-label">Cover Photo</label>
+                    <p className="form-help">Optional - upload new to replace existing</p>
+                    
+                    {!coverPhotoPreview ? (
+                      <input
+                        type="file"
+                        className="form-input-file"
+                        accept="image/*"
+                        onChange={handleCoverPhotoChange}
+                      />
+                    ) : (
+                      <div className="cover-photo-preview">
+                        <img 
+                          src={coverPhotoPreview} 
+                          alt="Cover preview" 
+                          className="preview-image"
+                        />
+                        <div className="preview-overlay">
+                          <p className="preview-filename">{collectionForm.coverPhoto?.name}</p>
+                          <button
+                            type="button"
+                            className="btn-remove-photo"
+                            onClick={handleRemoveCoverPhoto}
+                          >
+                            ✕ Remove
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Metadata */}
+                  <div className="form-group">
+                    <label className="form-label">Metadata</label>
+                    
+                    {Object.keys(collectionForm.metadata).length > 0 && (
+                      <div className="metadata-list">
+                        {Object.entries(collectionForm.metadata).map(([key, value]) => (
+                          <div key={key} className="metadata-item">
+                            <div className="metadata-item-content">
+                              <span className="metadata-item-key">{key}:</span>
+                              <span className="metadata-item-value">{value}</span>
+                            </div>
+                            <button
+                              type="button"
+                              className="metadata-item-remove"
+                              onClick={() => handleRemoveMetadata(key)}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="metadata-add">
+                      <input
+                        type="text"
+                        className="form-input form-input-inline"
+                        placeholder="Field name"
+                        value={newMetadataKey}
+                        onChange={(e) => setNewMetadataKey(e.target.value)}
+                      />
+                      <input
+                        type="text"
+                        className="form-input form-input-inline"
+                        placeholder="Value"
+                        value={newMetadataValue}
+                        onChange={(e) => setNewMetadataValue(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        className="btn-add-metadata"
+                        onClick={handleAddMetadata}
+                        disabled={!newMetadataKey.trim() || !newMetadataValue.trim()}
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Submit */}
+                  <div className="form-actions">
+                    <button
+                      type="button"
+                      className="btn-cancel"
+                      onClick={handleBackToActions}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-submit"
+                      onClick={handleUpdateCollection}
+                      disabled={!collectionForm.name.trim()}
+                    >
+                      Update Collection
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {currentStep === 'delete-collection' && (
+          <div className="wizard-panel">
+            <button 
+              className="back-btn"
+              onClick={handleBackToActions}
+            >
+              ← Back
+            </button>
+
+            <h2 className="wizard-title">Delete Collection</h2>
+
+            <div className="wizard-form">
+              <div className="form-group">
+                <label className="form-label">Select Collection to Delete *</label>
+                <select
+                  className="form-input"
+                  value={selectedCollectionId}
+                  onChange={(e) => setSelectedCollectionId(e.target.value)}
+                  required
+                >
+                  <option value="">-- Select a collection --</option>
+                  <option value="1">Baseball Cards (15 items)</option>
+                  <option value="2">Baseball Auto (8 items)</option>
+                  <option value="3">Farm Country (4 items)</option>
+                  <option value="4">SH Figuarts (2 items)</option>
+                  <option value="5">Pokemon (3 items)</option>
+                </select>
+              </div>
+
+              {selectedCollectionId && (
+                <div className="delete-warning">
+                  <p className="warning-icon">⚠️</p>
+                  <h3 className="warning-title">Warning: This action cannot be undone</h3>
+                  <p className="warning-text">
+                    Deleting this collection will permanently remove it and all items within it.
+                    This action is irreversible.
+                  </p>
+                </div>
+              )}
+
+              <div className="form-actions">
+                <button
+                  type="button"
+                  className="btn-cancel"
+                  onClick={handleBackToActions}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn-delete-confirm"
+                  onClick={handleConfirmDeleteCollection}
+                  disabled={!selectedCollectionId}
+                >
+                  Delete Collection
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {currentStep === 'edit-item' && (
+          <div className="wizard-panel">
+            <button 
+              className="back-btn"
+              onClick={handleBackToActions}
+            >
+              ← Back
+            </button>
+
+            <h2 className="wizard-title">Edit Item</h2>
+
+            <div className="wizard-form">
+              {/* Collection Selection */}
+              <div className="form-group">
+                <label className="form-label">Collection *</label>
+                <select
+                  className="form-input"
+                  value={itemForm.collectionId}
+                  onChange={(e) => {
+                    setItemForm({ ...itemForm, collectionId: e.target.value });
+                    setSelectedItemId(''); // Reset item selection when collection changes
+                  }}
+                  required
+                >
+                  <option value="">-- Select a collection --</option>
+                  <option value="1">Baseball Cards</option>
+                  <option value="2">Baseball Auto</option>
+                  <option value="3">Farm Country</option>
+                  <option value="4">SH Figuarts</option>
+                  <option value="5">Pokemon</option>
+                </select>
+              </div>
+
+              {itemForm.collectionId && (
+                <>
+                  {/* Item Selection */}
+                  <div className="form-group">
+                    <label className="form-label">Select Item *</label>
+                    <select
+                      className="form-input"
+                      value={selectedItemId}
+                      onChange={(e) => {
+                        setSelectedItemId(e.target.value);
+                        // TODO: Load item data and populate form
+                        setItemForm({
+                          ...itemForm,
+                          title: '',
+                          file: null,
+                          metadata: {},
+                        });
+                      }}
+                      required
+                    >
+                      <option value="">-- Select an item to edit --</option>
+                      <option value="1-1">1950s Vintage Card</option>
+                      <option value="1-2">2020 Rookie Card</option>
+                      <option value="1-3">Baseball Collection Set</option>
+                    </select>
+                  </div>
+
+                  {selectedItemId && (
+                    <>
+                      {/* Item Title */}
+                      <div className="form-group">
+                        <label className="form-label">Title *</label>
+                        <input
+                          type="text"
+                          className="form-input"
+                          placeholder="e.g., 1950s Vintage Card"
+                          value={itemForm.title}
+                          onChange={(e) => setItemForm({ ...itemForm, title: e.target.value })}
+                          required
+                        />
+                      </div>
+
+                      {/* Item Image */}
+                      <div className="form-group">
+                        <label className="form-label">Image</label>
+                        <p className="form-help">Optional - upload new to replace existing</p>
+                        
+                        {!itemImagePreview ? (
+                          <input
+                            type="file"
+                            className="form-input-file"
+                            accept="image/*"
+                            onChange={handleItemImageChange}
+                          />
+                        ) : (
+                          <div className="cover-photo-preview">
+                            <img 
+                              src={itemImagePreview} 
+                              alt="Item preview" 
+                              className="preview-image"
+                            />
+                            <div className="preview-overlay">
+                              <p className="preview-filename">{itemForm.file?.name}</p>
+                              <button
+                                type="button"
+                                className="btn-remove-photo"
+                                onClick={handleRemoveItemImage}
+                              >
+                                ✕ Remove
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Metadata */}
+                      <div className="form-group">
+                        <label className="form-label">Metadata</label>
+                        
+                        {Object.keys(itemForm.metadata).length > 0 && (
+                          <div className="metadata-list">
+                            {Object.entries(itemForm.metadata).map(([key, value]) => (
+                              <div key={key} className="metadata-item">
+                                <div className="metadata-item-content">
+                                  <span className="metadata-item-key">{key}:</span>
+                                  <span className="metadata-item-value">{value}</span>
+                                </div>
+                                <button
+                                  type="button"
+                                  className="metadata-item-remove"
+                                  onClick={() => handleRemoveItemMetadata(key)}
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="metadata-add">
+                          <input
+                            type="text"
+                            className="form-input form-input-inline"
+                            placeholder="Field name"
+                            value={itemMetadataKey}
+                            onChange={(e) => setItemMetadataKey(e.target.value)}
+                          />
+                          <input
+                            type="text"
+                            className="form-input form-input-inline"
+                            placeholder="Value"
+                            value={itemMetadataValue}
+                            onChange={(e) => setItemMetadataValue(e.target.value)}
+                          />
+                          <button
+                            type="button"
+                            className="btn-add-metadata"
+                            onClick={handleAddItemMetadata}
+                            disabled={!itemMetadataKey.trim() || !itemMetadataValue.trim()}
+                          >
+                            Add
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Submit */}
+                      <div className="form-actions">
+                        <button
+                          type="button"
+                          className="btn-cancel"
+                          onClick={handleBackToActions}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-submit"
+                          onClick={handleUpdateItem}
+                          disabled={!itemForm.title.trim()}
+                        >
+                          Update Item
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {currentStep === 'delete-item' && (
+          <div className="wizard-panel">
+            <button 
+              className="back-btn"
+              onClick={handleBackToActions}
+            >
+              ← Back
+            </button>
+
+            <h2 className="wizard-title">Delete Item</h2>
+
+            <div className="wizard-form">
+              {/* Collection Selection */}
+              <div className="form-group">
+                <label className="form-label">Collection *</label>
+                <select
+                  className="form-input"
+                  value={itemForm.collectionId}
+                  onChange={(e) => {
+                    setItemForm({ ...itemForm, collectionId: e.target.value });
+                    setSelectedItemId('');
+                  }}
+                  required
+                >
+                  <option value="">-- Select a collection --</option>
+                  <option value="1">Baseball Cards</option>
+                  <option value="2">Baseball Auto</option>
+                  <option value="3">Farm Country</option>
+                  <option value="4">SH Figuarts</option>
+                  <option value="5">Pokemon</option>
+                </select>
+              </div>
+
+              {itemForm.collectionId && (
+                <>
+                  <div className="form-group">
+                    <label className="form-label">Select Item to Delete *</label>
+                    <select
+                      className="form-input"
+                      value={selectedItemId}
+                      onChange={(e) => setSelectedItemId(e.target.value)}
+                      required
+                    >
+                      <option value="">-- Select an item --</option>
+                      <option value="1-1">1950s Vintage Card</option>
+                      <option value="1-2">2020 Rookie Card</option>
+                      <option value="1-3">Baseball Collection Set</option>
+                    </select>
+                  </div>
+
+                  {selectedItemId && (
+                    <div className="delete-warning">
+                      <p className="warning-icon">⚠️</p>
+                      <h3 className="warning-title">Warning: This action cannot be undone</h3>
+                      <p className="warning-text">
+                        Deleting this item will permanently remove it from the collection.
+                        This action is irreversible.
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+
+              <div className="form-actions">
+                <button
+                  type="button"
+                  className="btn-cancel"
+                  onClick={handleBackToActions}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn-delete-confirm"
+                  onClick={handleConfirmDeleteItem}
+                  disabled={!selectedItemId}
+                >
+                  Delete Item
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {currentStep === 'new-story' && (
+          <div className="wizard-panel">
+            <button 
+              className="back-btn"
+              onClick={handleBackToActions}
+            >
+              ← Back
+            </button>
+
+            <h2 className="wizard-title">Create New Story</h2>
+
+            <div className="wizard-form">
+              {/* Story Title */}
+              <div className="form-group">
+                <label className="form-label">Title *</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g., The Day I Found My First Vintage Card"
+                  value={storyForm.title}
+                  onChange={(e) => setStoryForm({ ...storyForm, title: e.target.value })}
+                  required
+                />
+              </div>
+
+              {/* Story Content */}
+              <div className="form-group">
+                <label className="form-label">Story Content *</label>
+                <textarea
+                  className="form-textarea"
+                  placeholder="Tell your story..."
+                  rows={8}
+                  value={storyForm.content}
+                  onChange={(e) => setStoryForm({ ...storyForm, content: e.target.value })}
+                  required
+                />
+              </div>
+
+              {/* Cover Image */}
+              <div className="form-group">
+                <label className="form-label">Cover Image</label>
+                <p className="form-help">Optional - main image for the story</p>
+                
+                {!storyCoverPreview ? (
+                  <input
+                    type="file"
+                    className="form-input-file"
+                    accept="image/*"
+                    onChange={handleStoryCoverChange}
+                  />
+                ) : (
+                  <div className="cover-photo-preview">
+                    <img 
+                      src={storyCoverPreview} 
+                      alt="Story cover preview" 
+                      className="preview-image"
+                    />
+                    <div className="preview-overlay">
+                      <p className="preview-filename">{storyForm.coverImage?.name}</p>
+                      <button
+                        type="button"
+                        className="btn-remove-photo"
+                        onClick={handleRemoveStoryCover}
+                      >
+                        ✕ Remove
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Link to Item (Optional) */}
+              <div className="form-group">
+                <label className="form-label">Link to Collection (Optional)</label>
+                <p className="form-help">Associate this story with a collection</p>
+                <select
+                  className="form-input"
+                  value={storyForm.collectionId || ''}
+                  onChange={(e) => setStoryForm({ ...storyForm, collectionId: e.target.value })}
+                >
+                  <option value="">-- None --</option>
+                  <option value="1">Baseball Cards</option>
+                  <option value="2">Baseball Auto</option>
+                  <option value="3">Farm Country</option>
+                  <option value="4">SH Figuarts</option>
+                  <option value="5">Pokemon</option>
+                </select>
+              </div>
+
+              {storyForm.collectionId && (
+                <div className="form-group">
+                  <label className="form-label">Link to Specific Item (Optional)</label>
+                  <select
+                    className="form-input"
+                    value={storyForm.itemId || ''}
+                    onChange={(e) => setStoryForm({ ...storyForm, itemId: e.target.value })}
+                  >
+                    <option value="">-- None --</option>
+                    <option value="1-1">1950s Vintage Card</option>
+                    <option value="1-2">2020 Rookie Card</option>
+                    <option value="1-3">Baseball Collection Set</option>
+                  </select>
+                </div>
+              )}
+
+              {/* Metadata */}
+              <div className="form-group">
+                <label className="form-label">Metadata (Optional)</label>
+                <p className="form-help">Add custom fields like tags, category, etc.</p>
+                
+                {Object.keys(storyForm.metadata).length > 0 && (
+                  <div className="metadata-list">
+                    {Object.entries(storyForm.metadata).map(([key, value]) => (
+                      <div key={key} className="metadata-item">
+                        <div className="metadata-item-content">
+                          <span className="metadata-item-key">{key}:</span>
+                          <span className="metadata-item-value">{value}</span>
+                        </div>
+                        <button
+                          type="button"
+                          className="metadata-item-remove"
+                          onClick={() => handleRemoveStoryMetadata(key)}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="metadata-add">
+                  <input
+                    type="text"
+                    className="form-input form-input-inline"
+                    placeholder="Field name (e.g., Category, Tags)"
+                    value={storyMetadataKey}
+                    onChange={(e) => setStoryMetadataKey(e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    className="form-input form-input-inline"
+                    placeholder="Value"
+                    value={storyMetadataValue}
+                    onChange={(e) => setStoryMetadataValue(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="btn-add-metadata"
+                    onClick={handleAddStoryMetadata}
+                    disabled={!storyMetadataKey.trim() || !storyMetadataValue.trim()}
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+
+              {/* Submit */}
+              <div className="form-actions">
+                <button
+                  type="button"
+                  className="btn-cancel"
+                  onClick={handleBackToActions}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn-submit"
+                  onClick={handleSubmitStory}
+                  disabled={!storyForm.title.trim() || !storyForm.content.trim()}
+                >
+                  Create Story
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {currentStep === 'edit-story' && (
+          <div className="wizard-panel">
+            <button 
+              className="back-btn"
+              onClick={handleBackToActions}
+            >
+              ← Back
+            </button>
+
+            <h2 className="wizard-title">Edit Story</h2>
+
+            <div className="wizard-form">
+              {/* Story Selection */}
+              <div className="form-group">
+                <label className="form-label">Select Story *</label>
+                <select
+                  className="form-input"
+                  value={selectedStoryId}
+                  onChange={(e) => {
+                    setSelectedStoryId(e.target.value);
+                    // TODO: Load story data and populate form
+                    setStoryForm({
+                      title: '',
+                      content: '',
+                      coverImage: null,
+                      itemId: '',
+                      collectionId: '',
+                      metadata: {},
+                    });
+                  }}
+                  required
+                >
+                  <option value="">-- Select a story to edit --</option>
+                  <option value="1">The 1952 Mickey Mantle Find</option>
+                  <option value="2">My First Pokemon Card</option>
+                  <option value="3">Grandpa's Baseball Collection</option>
+                </select>
+              </div>
+
+              {selectedStoryId && (
+                <>
+                  {/* Story Title */}
+                  <div className="form-group">
+                    <label className="form-label">Title *</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Story title"
+                      value={storyForm.title}
+                      onChange={(e) => setStoryForm({ ...storyForm, title: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  {/* Story Content */}
+                  <div className="form-group">
+                    <label className="form-label">Story Content *</label>
+                    <textarea
+                      className="form-textarea"
+                      placeholder="Tell your story..."
+                      rows={8}
+                      value={storyForm.content}
+                      onChange={(e) => setStoryForm({ ...storyForm, content: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  {/* Cover Image */}
+                  <div className="form-group">
+                    <label className="form-label">Cover Image</label>
+                    <p className="form-help">Optional - upload new to replace existing</p>
+                    
+                    {!storyCoverPreview ? (
+                      <input
+                        type="file"
+                        className="form-input-file"
+                        accept="image/*"
+                        onChange={handleStoryCoverChange}
+                      />
+                    ) : (
+                      <div className="cover-photo-preview">
+                        <img 
+                          src={storyCoverPreview} 
+                          alt="Story cover preview" 
+                          className="preview-image"
+                        />
+                        <div className="preview-overlay">
+                          <p className="preview-filename">{storyForm.coverImage?.name}</p>
+                          <button
+                            type="button"
+                            className="btn-remove-photo"
+                            onClick={handleRemoveStoryCover}
+                          >
+                            ✕ Remove
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Link to Collection */}
+                  <div className="form-group">
+                    <label className="form-label">Link to Collection (Optional)</label>
+                    <select
+                      className="form-input"
+                      value={storyForm.collectionId || ''}
+                      onChange={(e) => setStoryForm({ ...storyForm, collectionId: e.target.value })}
+                    >
+                      <option value="">-- None --</option>
+                      <option value="1">Baseball Cards</option>
+                      <option value="2">Baseball Auto</option>
+                      <option value="3">Farm Country</option>
+                      <option value="4">SH Figuarts</option>
+                      <option value="5">Pokemon</option>
+                    </select>
+                  </div>
+
+                  {storyForm.collectionId && (
+                    <div className="form-group">
+                      <label className="form-label">Link to Specific Item (Optional)</label>
+                      <select
+                        className="form-input"
+                        value={storyForm.itemId || ''}
+                        onChange={(e) => setStoryForm({ ...storyForm, itemId: e.target.value })}
+                      >
+                        <option value="">-- None --</option>
+                        <option value="1-1">1950s Vintage Card</option>
+                        <option value="1-2">2020 Rookie Card</option>
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Metadata */}
+                  <div className="form-group">
+                    <label className="form-label">Metadata</label>
+                    
+                    {Object.keys(storyForm.metadata).length > 0 && (
+                      <div className="metadata-list">
+                        {Object.entries(storyForm.metadata).map(([key, value]) => (
+                          <div key={key} className="metadata-item">
+                            <div className="metadata-item-content">
+                              <span className="metadata-item-key">{key}:</span>
+                              <span className="metadata-item-value">{value}</span>
+                            </div>
+                            <button
+                              type="button"
+                              className="metadata-item-remove"
+                              onClick={() => handleRemoveStoryMetadata(key)}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="metadata-add">
+                      <input
+                        type="text"
+                        className="form-input form-input-inline"
+                        placeholder="Field name"
+                        value={storyMetadataKey}
+                        onChange={(e) => setStoryMetadataKey(e.target.value)}
+                      />
+                      <input
+                        type="text"
+                        className="form-input form-input-inline"
+                        placeholder="Value"
+                        value={storyMetadataValue}
+                        onChange={(e) => setStoryMetadataValue(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        className="btn-add-metadata"
+                        onClick={handleAddStoryMetadata}
+                        disabled={!storyMetadataKey.trim() || !storyMetadataValue.trim()}
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Submit */}
+                  <div className="form-actions">
+                    <button
+                      type="button"
+                      className="btn-cancel"
+                      onClick={handleBackToActions}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-submit"
+                      onClick={handleUpdateStory}
+                      disabled={!storyForm.title.trim() || !storyForm.content.trim()}
+                    >
+                      Update Story
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {currentStep === 'delete-story' && (
+          <div className="wizard-panel">
+            <button 
+              className="back-btn"
+              onClick={handleBackToActions}
+            >
+              ← Back
+            </button>
+
+            <h2 className="wizard-title">Delete Story</h2>
+
+            <div className="wizard-form">
+              <div className="form-group">
+                <label className="form-label">Select Story to Delete *</label>
+                <select
+                  className="form-input"
+                  value={selectedStoryId}
+                  onChange={(e) => setSelectedStoryId(e.target.value)}
+                  required
+                >
+                  <option value="">-- Select a story --</option>
+                  <option value="1">The 1952 Mickey Mantle Find</option>
+                  <option value="2">My First Pokemon Card</option>
+                  <option value="3">Grandpa's Baseball Collection</option>
+                </select>
+              </div>
+
+              {selectedStoryId && (
+                <div className="delete-warning">
+                  <p className="warning-icon">⚠️</p>
+                  <h3 className="warning-title">Warning: This action cannot be undone</h3>
+                  <p className="warning-text">
+                    Deleting this story will permanently remove it.
+                    This action is irreversible.
+                  </p>
+                </div>
+              )}
+
+              <div className="form-actions">
+                <button
+                  type="button"
+                  className="btn-cancel"
+                  onClick={handleBackToActions}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn-delete-confirm"
+                  onClick={handleConfirmDeleteStory}
+                  disabled={!selectedStoryId}
+                >
+                  Delete Story
                 </button>
               </div>
             </div>

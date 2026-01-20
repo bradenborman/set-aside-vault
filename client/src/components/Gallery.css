@@ -1,7 +1,16 @@
 .gallery {
   width: 100%;
   position: relative;
-  padding-bottom: 150px; /* Extra space so last items can scroll above gradient */
+  /* IMPORTANT: Top padding allows first row items to scroll to center when spotlighted.
+     Bottom padding allows last row items to scroll above the gradient fade.
+     DO NOT REMOVE - Required for spotlight scroll-to-center functionality. */
+  padding-top: 0;
+  padding-bottom: 150px;
+  transition: padding-top 0.3s ease;
+}
+
+.gallery.has-spotlight-active {
+  padding-top: 150px;
 }
 
 /* Gradient blur overlay at bottom */
@@ -126,6 +135,16 @@
   gap: 1.5rem;
 }
 
+/* Wider grid for landscape collections */
+.images-grid-landscape {
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+}
+
+/* Wider grid for square collections */
+.images-grid-square {
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
 /* Aspect Ratio Variants */
 .images-grid-square .image-card {
   aspect-ratio: 1;
@@ -236,6 +255,161 @@
   z-index: 2;
 }
 
+/* Metadata Card - slides out from behind spotlighted card */
+.metadata-card {
+  position: fixed;
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  border: 2px solid rgba(148, 163, 184, 0.3);
+  z-index: 99;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: top 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.metadata-card-right {
+  background: linear-gradient(to right, 
+    rgba(226, 232, 240, 0.98) 0%,
+    rgba(241, 245, 249, 0.98) 20%,
+    rgba(255, 255, 255, 0.98) 40%,
+    rgba(255, 255, 255, 0.98) 100%
+  );
+  animation: slideOutRight 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.metadata-card-left {
+  background: linear-gradient(to left, 
+    rgba(226, 232, 240, 0.98) 0%,
+    rgba(241, 245, 249, 0.98) 20%,
+    rgba(255, 255, 255, 0.98) 40%,
+    rgba(255, 255, 255, 0.98) 100%
+  );
+  animation: slideOutLeft 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Close button */
+.metadata-close {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(51, 65, 85, 0.6);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: rgba(51, 65, 85, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+  padding: 0;
+}
+
+.metadata-close:hover {
+  background: rgba(255, 255, 255, 1);
+  border-color: rgba(51, 65, 85, 1);
+  color: rgba(51, 65, 85, 1);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.metadata-close-right {
+  left: -14px;
+}
+
+.metadata-close-left {
+  right: -14px;
+}
+
+@keyframes slideOutRight {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutLeft {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.metadata-content {
+  padding: 1.5rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.metadata-title {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  word-break: break-word;
+}
+
+.metadata-field {
+  margin-bottom: 0.875rem;
+  padding-bottom: 0.875rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.metadata-field:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.metadata-label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gray-600);
+  margin-bottom: 0.375rem;
+}
+
+.metadata-value {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--gray-900);
+  line-height: 1.4;
+}
+
+.metadata-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.metadata-tag {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  background: var(--gray-100);
+  color: var(--gray-700);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
 @media (max-width: 1024px) {
   .gallery::after {
     left: 0;
@@ -250,6 +424,29 @@
 @media (max-width: 768px) {
   .collection-name {
     font-size: 1.5rem;
+  }
+
+  .metadata-card {
+    position: fixed !important;
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 50vh !important;
+    border-radius: 16px 16px 0 0;
+    animation: slideInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .images-grid {

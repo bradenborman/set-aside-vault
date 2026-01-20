@@ -15,10 +15,9 @@ import './App.css'
 // - Show/hide Upload nav item based on admin status
 // - Protect upload route
 
-function Sidebar({ collections }: { collections: Collection[] }) {
+function Sidebar({ collections, activeCollectionId }: { collections: Collection[], activeCollectionId?: string }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { collectionId } = useParams()
 
   const isActive = (path: string) => location.pathname === path
 
@@ -62,7 +61,7 @@ function Sidebar({ collections }: { collections: Collection[] }) {
             {collections.map((collection) => (
               <button
                 key={collection.id}
-                className={`nav-item nav-item-collection ${collectionId === collection.id ? 'active' : ''}`}
+                className={`nav-item nav-item-collection ${activeCollectionId === collection.id ? 'active' : ''}`}
                 onClick={() => navigate(`/collection/${collection.id}`)}
               >
                 {collection.coverPhoto ? (
@@ -90,6 +89,12 @@ function AppContent() {
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
+  const location = useLocation()
+
+  // Extract collectionId from URL
+  const collectionId = location.pathname.startsWith('/collection/') 
+    ? location.pathname.split('/collection/')[1] 
+    : undefined;
 
   useEffect(() => {
     loadCollections()
@@ -119,7 +124,7 @@ function AppContent() {
 
   return (
     <div className="App">
-      <Sidebar collections={collections} />
+      <Sidebar collections={collections} activeCollectionId={collectionId} />
       
       <main className="app-main">
         <Routes>

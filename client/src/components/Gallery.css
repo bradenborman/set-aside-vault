@@ -627,20 +627,20 @@
   }
 
   .images-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
   }
 
   .images-grid-landscape {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .images-grid-square {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .images-grid-portrait {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .image-card {
@@ -657,47 +657,50 @@
   }
 
   .metadata-card {
-    height: 60vh !important;
+    height: 40vh !important;
+    max-height: 300px !important;
   }
 
   .metadata-content {
-    padding: 1.25rem;
+    padding: 1rem;
   }
 
   .metadata-title {
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
   }
 
   .metadata-field {
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.75rem;
+    margin-bottom: 0.625rem;
+    padding-bottom: 0.625rem;
   }
 
   .metadata-label {
     font-size: 0.625rem;
+    margin-bottom: 0.25rem;
   }
 
   .metadata-value {
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
   }
 }
 
 @media (max-width: 480px) {
   .images-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.625rem;
   }
 
   .images-grid-landscape {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .images-grid-square {
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .images-grid-portrait {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .image-card {
@@ -706,6 +709,33 @@
 
   .image-filename {
     padding: 1rem 0.5rem 0.5rem 0.5rem;
+    font-size: 0.6875rem;
+  }
+
+  .metadata-card {
+    height: 35vh !important;
+    max-height: 250px !important;
+  }
+
+  .metadata-content {
+    padding: 0.875rem;
+  }
+
+  .metadata-title {
+    font-size: 0.8125rem;
+    margin-bottom: 0.625rem;
+  }
+
+  .metadata-field {
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .metadata-label {
+    font-size: 0.5625rem;
+  }
+
+  .metadata-value {
     font-size: 0.6875rem;
   }
 }

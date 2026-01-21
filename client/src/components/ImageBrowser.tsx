@@ -17,9 +17,7 @@ interface ImageBrowserProps {
 export const ImageBrowser = ({ onSelect, onClose, selectedFilename }: ImageBrowserProps) => {
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(selectedFilename || null);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [selectedForDeletion, setSelectedForDeletion] = useState<Set<string>>(new Set());
   const [deleteMode, setDeleteMode] = useState(false);
 
@@ -92,23 +90,15 @@ export const ImageBrowser = ({ onSelect, onClose, selectedFilename }: ImageBrows
     setSelectedForDeletion(newSelection);
   };
 
-  const filteredFiles = mediaFiles.filter(file =>
-    file.filename.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   const handleImageClick = (filename: string) => {
-    setSelectedImage(filename);
-    if (onSelect) {
-      onSelect(filename);
+    if (deleteMode) {
+      toggleDeleteSelection(filename);
+    } else {
+      setSelectedImage(filename);
+      if (onSelect) {
+        onSelect(filename);
+      }
     }
-  };
-
-  const handleImageHover = (url: string) => {
-    setPreviewImage(url);
-  };
-
-  const handleImageLeave = () => {
-    setPreviewImage(null);
   };
 
   const formatFileSize = (bytes: number) => {
@@ -129,22 +119,15 @@ export const ImageBrowser = ({ onSelect, onClose, selectedFilename }: ImageBrows
       </div>
 
       <div className="image-browser-controls">
-        <input
-          type="text"
-          className="search-input"
-          placeholder="Search by filename..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+        <span className="file-count">
+          {mediaFiles.length} {mediaFiles.length === 1 ? 'file' : 'files'}
+        </span>
         <div className="control-buttons">
-          <span className="file-count">
-            {filteredFiles.length} {filteredFiles.length === 1 ? 'file' : 'files'}
-          </span>
           {!deleteMode ? (
             <button
               className="btn-delete-mode"
               onClick={() => setDeleteMode(true)}
-              disabled={filteredFiles.length === 0}
+              disabled={mediaFiles.length === 0}
             >
               🗑️ Delete Files
             </button>
@@ -175,23 +158,17 @@ export const ImageBrowser = ({ onSelect, onClose, selectedFilename }: ImageBrows
         <div className="image-browser-loading">
           <p>Loading media library...</p>
         </div>
-      ) : filteredFiles.length === 0 ? (
+      ) : mediaFiles.length === 0 ? (
         <div className="image-browser-empty">
-          <p>
-            {searchTerm
-              ? 'No files match your search'
-              : 'No unused media files found. Upload some files first!'}
-          </p>
+          <p>No unused media files found. Upload some files first!</p>
         </div>
       ) : (
         <div className="image-browser-grid">
-          {filteredFiles.map((file) => (
+          {mediaFiles.map((file) => (
             <div
               key={file.filename}
               className={`image-browser-item ${selectedImage === file.filename ? 'selected' : ''} ${deleteMode && selectedForDeletion.has(file.filename) ? 'marked-for-deletion' : ''}`}
-              onClick={() => deleteMode ? toggleDeleteSelection(file.filename) : handleImageClick(file.filename)}
-              onMouseEnter={() => !deleteMode && handleImageHover(file.url)}
-              onMouseLeave={handleImageLeave}
+              onClick={() => handleImageClick(file.filename)}
             >
               <div className="image-browser-thumbnail">
                 <img src={file.url} alt={file.filename} loading="lazy" />
@@ -210,12 +187,6 @@ export const ImageBrowser = ({ onSelect, onClose, selectedFilename }: ImageBrows
               )}
             </div>
           ))}
-        </div>
-      )}
-
-      {previewImage && (
-        <div className="image-preview-overlay" onClick={() => setPreviewImage(null)}>
-          <img src={previewImage} alt="Preview" />
         </div>
       )}
     </div>

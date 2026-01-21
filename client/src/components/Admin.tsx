@@ -1217,8 +1217,10 @@ export const Admin = () => {
                   <div className="library-browser-container">
                     <ImageBrowser
                       onSelect={(filename) => {
+                        console.log('ImageBrowser onSelect called with:', filename);
                         setSelectedItemLibraryImage(filename);
                         setItemImagePreview(`/api/images/${filename}`);
+                        console.log('State should be updated - selectedItemLibraryImage:', filename);
                       }}
                       selectedFilename={selectedItemLibraryImage || undefined}
                     />
@@ -1291,7 +1293,16 @@ export const Admin = () => {
                 <button
                   type="button"
                   className="btn-submit"
-                  onClick={handleSubmitItem}
+                  onClick={() => {
+                    console.log('Submit button clicked - Debug info:');
+                    console.log('  collectionId:', itemForm.collectionId);
+                    console.log('  title:', itemForm.title);
+                    console.log('  file:', itemForm.file);
+                    console.log('  selectedItemLibraryImage:', selectedItemLibraryImage);
+                    console.log('  metadata keys:', Object.keys(itemForm.metadata));
+                    console.log('  Button should be enabled:', !(!itemForm.collectionId || !itemForm.title.trim() || (!itemForm.file && !selectedItemLibraryImage) || Object.keys(itemForm.metadata).length === 0));
+                    handleSubmitItem();
+                  }}
                   disabled={!itemForm.collectionId || !itemForm.title.trim() || (!itemForm.file && !selectedItemLibraryImage) || Object.keys(itemForm.metadata).length === 0}
                 >
                   Create Item

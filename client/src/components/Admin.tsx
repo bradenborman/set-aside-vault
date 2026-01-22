@@ -366,12 +366,20 @@ export const Admin = () => {
   };
 
   const handleSubmitItem = async () => {
+    console.log('=== handleSubmitItem called ===');
+    console.log('itemForm.file:', itemForm.file);
+    console.log('selectedItemLibraryImage:', selectedItemLibraryImage);
+    console.log('itemForm:', itemForm);
+    
     try {
       if (!itemForm.file && !selectedItemLibraryImage) {
+        console.error('Validation failed: No image provided');
         alert('Item image is required');
         return;
       }
 
+      console.log('Validation passed, calling createItem API...');
+      
       // Call the real API
       const newItem = await createItem(
         {
